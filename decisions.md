@@ -1,0 +1,201 @@
+# Pinned decisions
+
+Contract ambiguities resolved once, here. Each drives conformance in every language repo. Add a
+numbered entry when you resolve a new one; never resolve the same question twice in a language repo.
+
+---
+
+## 1. Result-callback redelivery is an idempotent ack
+
+**Live bug.** The host deliberately sends `nonce = run_id`, **stable across redeliveries**
+(`issued_at` is fresh per attempt), so an in-window re-post can be deduped rather than processed
+twice.
+
+**Contract:** on the **result route only**, a duplicate nonce inside the window is an idempotent
+**`200 {"ok":true}` ack** — **but only when the earlier delivery's handler dispatch SUCCEEDED**. The
+**action route keeps full replay semantics** (`409 replay`).
+
+Rationale: the two routes have opposite failure economics. A replayed *invocation* is an attack or a
+double-write and must be refused; a replayed *result* is our own retry and must be absorbed. Refusing
+it with 409 makes the host keep retrying forever against a healthy Embassy.
+
+**Nonce release on failed dispatch.** If handler dispatch fails (the Embassy returns a signed non-2xx
+to the host), the Embassy MUST **release/forget that nonce** so the host's redelivery is genuinely
+processed rather than silently acked. Without the release, one transient handler error permanently
+drops the result: the retry sees a "seen" nonce and gets a 200 ack for work that never happened.
+Record the nonce as consumed only after the handler has succeeded.
+
+**Stale `issued_at` is still `409 replay` on the result route**, regardless of nonce state — the
+freshness envelope is not what idempotency relaxes.
+
+Handler idempotency is still required — a redelivery *outside* the window is a legitimate second
+dispatch.
+
+---
+
+## 2. `reasoning_steps` is dead
+
+It exists only in the Ruby `Result` object. The host has never sent it and there is no field for it in
+the result envelope. **Deleted from the contract.** No port carries it.
+
+---
+
+## 3. Result surface is complete
+
+The result callback carries, in addition to `draft` / `notes[]` / `metadata` / `decline` /
+`attachments[]`:
+
+- **`actions[]`** — proposals, top-level, each carrying `slug` (registry action id) as well as `id`
+  (the confirm-token target). Top-level because an Embassy must never have to walk `notes[].actions`.
+- **`executed_actions[]`** — actions that already ran mid-loop. Render as **outcomes**, never confirm
+  buttons.
+- **`questions[]`** — clarifying questions; answers return over the sent-message route.
+- **`delete[]`** — artifacts to retract.
+
+Every language implements all of them from day one.
+
+---
+
+## 4. Analysis trigger carries a principal
+
+The host already accepts `principal {kind, external_id, asserted_by, assurance, tenant_hint?,
+source_metadata?}` on `POST /analyses/{project}`. It is contract, not an accident — every Embassy
+exposes it.
+
+`kind` + `external_id` are the identity core: both present or the request is rejected (a partial
+assertion silently under-scopes to tenant-only). `asserted_by` / `assurance` are **not** defaulted
+host-side on this route — the signed channel owns its own trust semantics.
+
+---
+
+## 5. Sent-message `metadata` is fixed
+
+`POST /analyses/{project}/sent-message` takes `metadata` of **exactly**
+`{resource_type, resource_id}`. The host strict-decodes; any other key is a `400`.
+
+The **general rule**: **trigger-direction routes (`/analyses/*`) are STRICT** — unknown field = `400`;
+**action/result direction is tolerant-inbound** — ignore what you do not know. That asymmetry is
+deliberate: we want our own callers' drift to be loud, and we want additive host changes to be
+non-breaking for deployed Embassies. It is also the entire versioning story (see §10).
+
+Note the trigger's own `metadata` **is** free-form — only the sent-message one is fixed.
+
+---
+
+## 6. Error vocabulary, refusal envelope, note key
+
+**Error `class` values are snake_case, and this is the whole vocabulary:**
+`invalid_request` · `bad_signature` · `replay` · `schema_violation` · `resolve_failed` ·
+`handler_error` · `internal_error`. Status table in
+[`CONTRACT.md`](CONTRACT.md#error-vocabulary).
+
+**Refusal minimum:** non-2xx status **and** a signed body
+`{"ok":false,"error":{"class":…,"message":…}}`.
+
+Reconciling the two pre-hub fixture copies: the **host** copy won on envelope shape and field order;
+the **gem** copy won on the error vocabulary. The host golden `result_refusal.json` carried
+`"class": "Rootcause::SchemaViolation"` — a Ruby class name leaking into a cross-language contract.
+That is now `schema_violation` everywhere.
+
+**b. The note key is `key`, not `kind`.** The Ruby async-analysis doc says `notes[].kind == "summary"`;
+the host emits `notes[].key`. **`key` is the contract.** Fall back to nothing — a note without
+`key: "summary"` is surfaced only if no summary note exists at all.
+
+**c. `internal_error` messages are the exception CLASS NAME only.** An unexpected error's message may
+carry untrusted input; it never crosses the wire.
+
+**d. The `405` non-POST answer at the mount uses `class: "method_not_allowed"` and is UNSIGNED.** It
+is a transport-level refusal before any contract processing, and it is the liveness probe's target —
+deliberately outside the signed error vocabulary.
+
+---
+
+## 7. Total invocation budget
+
+The host waits `ACTION_RUNNER_TIMEOUT` (**25s** default), **one shot, no retry** — a timed-out action
+may still have run, so retrying would double-write.
+
+**Contract:** an Embassy MUST bound **script fetch + execution together** under one deadline, default
+**22s**, so its signed refusal beats the host's cutoff. The standalone execute timeout (20s) applies
+within it. Without the outer deadline a slow fetch plus a full-length execute exceeds 25s and the host
+sees an opaque transport timeout instead of the Embassy's real error.
+
+---
+
+## 8. `runtime` tokens
+
+`"ruby"` (in-process eval) · `"go"` (yaegi-interpreted Go source) · `"python"` (hosted mode only,
+today). A brain action manifest declares which runtime its script is.
+
+An Embassy **hard-refuses a runtime it does not implement**: `400 invalid_request`. Never attempt a
+best-effort interpretation.
+
+---
+
+## 9. Tenant exposure is mechanism-neutral
+
+**Contract** (all languages): the reserved names `tenant_id`, `tenant_slug`, `tenant_scope_value`,
+`rc_tenant_*` — rejected in **both** `params` and `schema` — plus the all-or-nothing tuple rule and
+the partial-tuple refusal.
+
+**Not contract:** *how* the tuple reaches the script. `RC_TENANT_*` **env** is the convention for
+subprocess and hosted execution. An in-process Embassy may instead pass a **trusted typed argument**,
+which avoids mutating process-global env and therefore avoids a global execution mutex. Ruby keeps
+its documented ENV dance (install → run → restore, serialized); Go passes a typed argument and
+executes concurrently.
+
+---
+
+## 10. Health endpoint
+
+New, optional but recommended.
+
+```
+GET {mount}/health   (signed)
+→ 200 + signed {"ok":true,"embassy":"<lang>","version":"x.y.z","protocol":1,
+                "capabilities":["actions","dry_run","analysis_result","health"]}
+```
+
+An **unsigned** request gets **404** — no existence leak to an unauthenticated prober.
+
+The `405 + Allow: POST` probe at the mount stays the **floor** for older Embassies; operator tooling
+(`/rc-action-doctor`) upgrades to `/health` opportunistically and falls back.
+
+**`protocol: 1` is the versioning story.** Bump only on a breaking change. Additive fields stay
+non-breaking because the action/result direction decodes tolerantly (§5). No negotiation, no version
+header.
+
+---
+
+## 11. The two invariants no port may drop
+
+Restated verbatim so a future language port cannot quietly lose them:
+
+1. **No Embassy auto-executes an action.** `actions[]` in a result are proposals a human confirms via
+   the host's single-use confirm URL; `executed_actions[]` already ran host-side and render as
+   outcomes. Mid-loop autonomy is host-gated policy, never an Embassy decision.
+2. **No principal ever originates from model output.** A principal is asserted by the customer's own
+   authenticated backend (chat JWT) or stamped by trusted server-side code (analysis trigger). The
+   same holds for the tenant tuple: the host stamps it outside model-authored params and signs the
+   exact body.
+
+---
+
+## Fixture reconciliation notes
+
+The pre-hub goldens existed in two divergent copies. Resolved as follows:
+
+| Aspect | Winner | Why |
+|---|---|---|
+| Envelope shape + field order | host (`internal/action/testdata/contract/`) | the host marshals the signed bytes |
+| Error `class` vocabulary | gem (snake_case) | language-neutral (§6) |
+| `script_digest` value | gem (`sha256:3932d2ca…`) | it is the **real** sha256 of the fixture script; the host's `sha256:abc123` is a placeholder no Embassy could digest-verify |
+| `project_id` | host (`11111111-…`) | the gem used the nil UUID, which several code paths treat as absent |
+| Param/script sample values | gem (`x@acme.com`) | more realistic; values are not contract |
+| `dry_run` on the flat fixture | new | the flat golden now omits `dry_run` entirely, which is the byte-shape that matters (emitted iff true); the dry-run case has its own fixture |
+| Refusal body | gem minimum | `{ok:false,error:{class,message}}` — the host golden also carried `return_value`/`duration_ms`, which are not required on a refusal |
+
+## Known gaps (host-tracked, deliberately NOT in this contract)
+
+Embassy attachments over the action plane · Embassy mid-loop autonomy · a customer-held approval
+factor · MCP-per-end-user. Do not invent wire shapes for these in a language repo.

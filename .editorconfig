@@ -1,0 +1,18 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# The fixture bytes are the wire bytes: no final newline (it would break every signature).
+[fixtures/**]
+insert_final_newline = false
+trim_trailing_whitespace = false
+
+[fixtures/signing_vectors.json]
+insert_final_newline = true
+
+[fixtures/README.md]
+insert_final_newline = true

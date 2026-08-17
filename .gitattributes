@@ -1,0 +1,3 @@
+# Fixture bytes ARE the wire bytes. No eol conversion, ever — a trailing newline or a CRLF
+# breaks every signature in signing_vectors.json.
+fixtures/** -text
