@@ -58,8 +58,8 @@ Snake_case `class` codes. This is the whole vocabulary — an implementation inv
 | HTTP | `class` | Meaning |
 |---|---|---|
 | 400 | `invalid_request` | unparseable body, missing required field, unimplemented `runtime` |
-| 401 | `bad_signature` | signature missing or did not verify; also a stale `issued_at` |
-| 409 | `replay` | `nonce` already seen inside the window (action route only) |
+| 401 | `bad_signature` | signature missing or did not verify |
+| 409 | `replay` | stale `issued_at` (outside ±clock_skew, both routes), or `nonce` already seen inside the window (action route; on the result route a seen nonce is the idempotent ack instead) |
 | 422 | `schema_violation` | params failed re-validation against the invocation's `schema` |
 | 502 | `resolve_failed` | script fetch non-2xx / transport failure / **digest mismatch** / unsigned fetch response |
 | 500 | `handler_error` | the result route could not dispatch (handler unconfigured or unloadable) |

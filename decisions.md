@@ -108,6 +108,12 @@ carry untrusted input; it never crosses the wire.
 is a transport-level refusal before any contract processing, and it is the liveness probe's target —
 deliberately outside the signed error vocabulary.
 
+**e. Inside a signed `200` result envelope, an execution failure's `error.class` is
+implementation-defined** (Ruby emits Ruby class names like `Timeout::Error`; Go emits tokens like
+`timeout`/`panic`/`compile_error`/`non_serializable_result`). The host treats it as a human
+diagnostic only — never control flow. The closed snake_case vocabulary above governs **refusals**
+(non-2xx) only.
+
 ---
 
 ## 7. Total invocation budget

@@ -7,7 +7,7 @@ row. Local paths are under `~/code/rootcause-org/`.
 |---|---|---|---|---|
 | `rootcause` | **host** — the other side of every plane | live | — | `internal/action/testdata/contract/` |
 | `rootcause-embassy-ruby` | Ruby Embassy (Rails/Rack), gem `rootcause-embassy` | live, 0.5.x | `ruby` (in-process eval) | `spec/fixtures/contract/` |
-| `rootcause-embassy-go` | Go Embassy, module `github.com/rootcause-org/rootcause-embassy-go` | planned | `go` (yaegi) | — |
+| `rootcause-embassy-go` | Go Embassy, module `github.com/rootcause-org/rootcause-embassy-go` | live, 0.1.0 | `go` (yaegi) | `internal/contract/testdata/` |
 | PHP | Laravel/Symfony Embassy | planned | `php` | — |
 | Python | Django/FastAPI Embassy | planned | `python` (hosted mode only today) | — |
 | Node | Express/Nest Embassy | planned | `node` | — |
@@ -18,32 +18,28 @@ row. Local paths are under `~/code/rootcause-org/`.
 |---|---|---|---|---|---|---|---|---|---|
 | host | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | verify only | ✅ | — |
 | ruby | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ |
-| go | — | — | — | — | — | — | — | — | — |
+| go | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 ## Open conformance debt
 
-**rootcause-embassy-ruby**
-- decision 1 — shipped (idempotent ack + nonce release on failed dispatch); it is the reference
-  implementation of that rule
-- decision 2 — `Result#reasoning_steps` still exists
-- decision 3 — no `executed_actions` / `questions` / `delete` accessors
-- decision 4 — `start_analysis` has no `principal:` kwarg
-- decision 5 — docs describe sent-message `metadata` as free-form
-- decision 7 — no total (fetch + execute) deadline
-- `capture_sent_message` cannot send `answers[]`
-- decision 6b — async-analysis doc says `notes[].kind`, host emits `notes[].key`
+**rootcause-embassy-ruby** (decisions 1–7 shipped; decision 1 reference implementation:
+idempotent ack + nonce release on failed dispatch)
+- `capture_sent_message` cannot send `answers[]` (host accepts them; Go sends them)
+- decision 6b — verify async-analysis doc says `notes[].key` (host emits `key`, `kind` is legacy)
 - decision 10 — no health endpoint (optional)
 - fixtures not yet vendored from the hub
-- stale skill doc `.agents/skills/embassy-action-runner/SKILL.md` points at pre-rename paths
 
-**rootcause (host)**
-- `WIRE-CONTRACT.md` should shrink to a pointer here + a host-specific file map
-- dead file refs in `WIRE-CONTRACT.md` and `.agents/commands/rc-action-doctor.md`
-  (`internal/actionhttp`, `internal/action/service.go`) — real:
-  `internal/web/customer/action.go`, `internal/actionexec/service.go`
-- `.agents/skills/actions/execution-modes.md` — digest drift WARNs and executes, it does not refuse
-- golden `result_refusal.json` still carries `Rootcause::SchemaViolation` (decision 6)
-- contract test should print the vendored hub SHA
+**rootcause-embassy-go** (0.1.0, hub SHA printed by conformance suite)
+- yaegi caveats, documented in its README/AGENTS: script stdout only via `a.Out()` (`fmt.Println`
+  escapes — no process-global redirect); deadline cancels the main frame only, scripts must not
+  spawn goroutines; interpreters pooled per (digest, tenant) because pooled programs keep
+  package-level state
+- no CI workflow, no tagged release, no GitHub remote
+
+**rootcause (host)** (doc/golden cleanup shipped: `WIRE-CONTRACT.md` is a pointer here, goldens
+re-vendored from hub `4f02c9f`, contract test prints the vendored SHA)
+- analysis/ and chat/ fixture planes not vendored host-side (test covers `actions/` only)
+- no host-side consumer of the health endpoint yet — `/rc-action-doctor` still uses the 405 probe
 
 ## Adding a language
 
