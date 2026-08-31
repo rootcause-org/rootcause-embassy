@@ -9,7 +9,7 @@ row. Local paths are under `~/code/rootcause-org/`.
 | `rootcause-embassy-ruby` | Ruby Embassy (Rails/Rack), gem `rootcause-embassy` | live, 0.5.x | `ruby` (in-process eval) | `spec/fixtures/contract/` |
 | `rootcause-embassy-go` | Go Embassy, module `github.com/rootcause-org/rootcause-embassy-go` | live, 0.1.0 | `go` (yaegi) | `internal/contract/testdata/` |
 | PHP | Laravel/Symfony Embassy | planned | `php` | — |
-| Python | Django/FastAPI Embassy | planned | `python` (hosted mode only today) | — |
+| `rootcause-embassy-python` | Python Embassy (Litestar/FastAPI/Django), package `rootcause_embassy` | in progress (WP4) | `python` (via registered runner, decision 12) | `tests/contract/testdata/` |
 | Node | Express/Nest Embassy | planned | `node` | — |
 
 ## Per-plane coverage

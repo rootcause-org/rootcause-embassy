@@ -130,8 +130,9 @@ sees an opaque transport timeout instead of the Embassy's real error.
 
 ## 8. `runtime` tokens
 
-`"ruby"` (in-process eval) · `"go"` (yaegi-interpreted Go source) · `"python"` (hosted mode only,
-today). A brain action manifest declares which runtime its script is.
+`"ruby"` (in-process eval) · `"go"` (yaegi-interpreted Go source) · `"python"` (host-side hosted
+execution today; an Embassy accepts it only via a registered runner — decision 12). A brain action
+manifest declares which runtime its script is.
 
 An Embassy **hard-refuses a runtime it does not implement**: `400 invalid_request`. Never attempt a
 best-effort interpretation.
@@ -184,6 +185,32 @@ Restated verbatim so a future language port cannot quietly lose them:
    authenticated backend (chat JWT) or stamped by trusted server-side code (analysis trigger). The
    same holds for the tenant tuple: the host stamps it outside model-authored params and signs the
    exact body.
+
+---
+
+## 12. Python Embassy: `runtime: "python"` executes only through a registered runner
+
+Today the host runs `runtime: python` scripts itself (hosted mode), so no invocation with that token
+reaches an Embassy. A Python Embassy still implements the **whole** action route — verify → parse →
+tenant → replay → schema → resolve (digest-verified signed fetch) → dry run → sign — because the
+pipeline, not the interpreter, is what the contract pins.
+
+**Contract:**
+
+- The Python Embassy's runtime token is `"python"`; any other token is `400 invalid_request`
+  (decision 8, unchanged).
+- Execution goes through a customer-registered **runner** (a callable given the digest-verified
+  script, the validated params and the trusted tenant tuple). The Embassy ships **no built-in
+  interpreter**; `exec` of the body is the customer's opt-in, never a default.
+- A real (non-dry-run) invocation with **no runner registered** is refused `400 invalid_request`
+  ("runtime python is not executable in this Embassy") — the same class decision 8 assigns to an
+  unimplemented runtime, so the host needs no new vocabulary. The refusal is signed like every other.
+- `dry_run: true` needs no runner: it exercises the full pipeline including the signed fetch and
+  returns the ordinary `{"dry_run":true,"would_execute":true}` envelope.
+- Tenant exposure follows decision 9: an in-process runner gets the tuple as a trusted typed
+  argument, never via process-global env.
+
+No new fixture: the refusal shape is the existing `invalid_request` envelope.
 
 ---
 
