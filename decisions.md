@@ -252,6 +252,10 @@ single-secret receivers keep accepting legacy callbacks/probes without it, while
 require it. Embassy-originated calls select the local map entry from a project id supplied to the client
 call; no second wire identity mechanism is introduced.
 
+Map-mode script caches are project-partitioned even though the digest identifies identical bytes. A
+cache hit under project A proves only that A's host registry authorized that digest; project B must make
+its own signed fetch once so the host can enforce B's registry before the shared Embassy executes it.
+
 Rollout is ordered: hosts emit `project_id` on callbacks before an Embassy deployment enables map mode.
 
 ---

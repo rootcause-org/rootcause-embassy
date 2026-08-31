@@ -100,6 +100,9 @@ X-Webhook-Signature: sha256=<hex over the RAW query string>
 - The Embassy **hard-refuses an unsigned or mis-signed body** → `502 resolve_failed`.
 - The Embassy **re-verifies `sha256(script) == digest`** before caching or running. Mismatch →
   `502 resolve_failed`, and the body never runs.
+- In reverse-secret map mode, script caches are partitioned by canonical `project_id` + digest. A
+  same-digest cache entry fetched under project A must not let project B skip its own signed host fetch:
+  that fetch is the host's proof that the digest is approved for B too.
 - The digest must be a `sha256:` prefix plus 64 lowercase hex chars. Validate the shape before using
   it as a cache filename — a malformed digest must not become a path traversal.
 
