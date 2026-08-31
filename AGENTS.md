@@ -31,6 +31,12 @@ Each subagent's prompt is:
 > Make the implementation conform. Re-vendor `fixtures/` from the hub at that SHA (update the recorded
 > hub SHA). Run the conformance suite. Report what changed and anything the contract left ambiguous.
 
+A new-port brief names, per plane, the reference file to read (see the repo map in each language's
+`AGENTS.md`) and the deviations the hub sanctions (runtime token, tenant exposure mechanism, timeout
+capability — e.g. Python cannot kill a runner thread, so its deadline is cooperative). Vendoring is a
+wholesale copy of `fixtures/` at one SHA, no-newline files preserved, `HUB_SHA` written, byte parity
+checked with `diff -r`.
+
 For a **new** language repo, publication is part of done unless the task explicitly opts out:
 
 1. Create the public GitHub repo under `rootcause-org`, matching the sibling Embassy repos.
@@ -57,6 +63,9 @@ Every language repo carries a test suite that:
 
 A repo that cannot replay a fixture **fails CI**. That is the only enforcement mechanism this design
 has, so it is not optional.
+
+The case list is [`conformance.md`](conformance.md) — port from it, not from another language's
+test file. Precedence when sources disagree: fixtures > hub prose > any reference implementation.
 
 ## Rule 4 — vendored fixtures carry the hub SHA
 

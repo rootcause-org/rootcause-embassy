@@ -64,6 +64,9 @@ chat/
 
 ## What a conformance suite asserts
 
+The full per-plane case list is [`../conformance.md`](../conformance.md); the seven points below are
+the spine.
+
 1. **Verify** — for each entry in `signing_vectors.json.bodies`, HMAC-SHA256 the referenced file's
    exact bytes with the listed secret and match `signature`. Also match `body_sha256` and
    `body_bytes` (they catch a newline that snuck in through a checkout or an editor).
