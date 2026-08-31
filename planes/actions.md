@@ -64,7 +64,11 @@ Golden: [`fixtures/actions/invocation_flat.json`](../fixtures/actions/invocation
   spelling are rejected **in both `params` and `schema`**. Params select an in-tenant target, never
   the tenant itself.
 - A tenant-enabled deployment sets `require_tenant_context = true`: a validly signed **absent** tuple
-  refuses before script resolution.
+  refuses before script resolution unless its signed `action_id` is in the deployment's explicit
+  `tenantless_actions` allowlist. This narrow exception lets a shared, flat project use selected
+  globally unique actions against records whose tenant is derived by the reviewed script; every other
+  action remains strict. A partial tuple always refuses, including for an allowlisted action. An
+  allowlisted action carrying a complete tuple follows the ordinary tenant-bound path.
 - **Exposure to the script is mechanism-neutral**
   ([decision 9](../decisions.md#9-tenant-exposure-is-mechanism-neutral)). `RC_TENANT_ID`,
   `RC_TENANT_SLUG`, `RC_TENANT_SCOPE_VALUE` **env** is the convention for subprocess and hosted

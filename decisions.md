@@ -214,6 +214,25 @@ No new fixture: the refusal shape is the existing `invalid_request` envelope.
 
 ---
 
+## 13. Strict tenant context may exempt named actions, never a whole project
+
+Some applications expose both tenant-bound projects and a genuinely flat staff project through one
+Embassy deployment. Strict tenant enforcement remains the default, but the deployment may configure
+an explicit `tenantless_actions` allowlist keyed by the signed `action_id`.
+
+- A fully absent tenant tuple is accepted only for an allowlisted action.
+- A partial tuple always refuses, even when the action is allowlisted.
+- A complete tuple on an allowlisted action remains valid and is exposed normally.
+- Missing or unknown action ids get no exception.
+
+The exception is per action rather than per project: several projects may share one reverse secret,
+while an approved action id is the narrow capability the deployment intends to expose flat. Action ids
+used this way must therefore remain globally unique across those projects. No protocol bump or new
+fixture is needed: the wire shapes are the existing flat and tenant invocation goldens; this decision
+only controls which signed flat invocation a strict deployment accepts.
+
+---
+
 ## Fixture reconciliation notes
 
 The pre-hub goldens existed in two divergent copies. Resolved as follows:

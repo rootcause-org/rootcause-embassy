@@ -28,6 +28,9 @@ debt" in [`languages.md`](languages.md), never copy it.
   non-boolean `dry_run` → 400 **before** any fetch; stale `issued_at` → 409; reserved `rc_tenant_*`
   / `tenant_*` names in params **or** schema → 422; partial tuple → 400; body over the inbound cap →
   400; runner exception → signed `200`, `ok:false`, implementation-defined class (decision 6e).
+- Tenant-context policy: with strict tenant context enabled, an absent tuple is accepted only when
+  the signed `action_id` is explicitly allowlisted; a non-allowlisted flat invocation refuses; a
+  partial tuple still refuses for an allowlisted action; a complete tuple remains accepted for it.
 - Every refusal is signed. `405 + Allow: POST` is the only unsigned answer, class `method_not_allowed`.
 - Health: unsigned → 404; signed (over the raw query, `""` when none) → `health_response.json` with
   `embassy`/`version` substituted.
