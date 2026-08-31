@@ -31,6 +31,17 @@ Each subagent's prompt is:
 > Make the implementation conform. Re-vendor `fixtures/` from the hub at that SHA (update the recorded
 > hub SHA). Run the conformance suite. Report what changed and anything the contract left ambiguous.
 
+For a **new** language repo, publication is part of done unless the task explicitly opts out:
+
+1. Create the public GitHub repo under `rootcause-org`, matching the sibling Embassy repos.
+2. Add the SSH `origin`, push the full local `main` history and set its upstream.
+3. Verify local `HEAD` equals `origin/main`, the worktree is clean, and the GitHub default branch is
+   `main`.
+
+An explicit local-only / no-push instruction wins, but the subagent must report GitHub publication as
+pending and [`languages.md`](languages.md) must say so. Never let a local commit read as a fully
+landed implementation.
+
 If a subagent reports an ambiguity, **resolve it here** (new decision + fixture) and re-fan; do not
 let it be settled locally.
 
