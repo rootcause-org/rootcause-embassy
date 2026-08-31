@@ -49,6 +49,9 @@ Golden: [`fixtures/actions/invocation_flat.json`](../fixtures/actions/invocation
   (format/pattern/enum) are deliberately not sent. Types: `string`, `integer`, `number`, `boolean`,
   `string[]`.
 - **`project_id` is always present** — the Embassy needs it to scope the script fetch.
+- In reverse-secret map mode, the Embassy reads only `project_id` before signature verification to
+  select the candidate key. Missing, malformed or unknown ids refuse as opaque `401 bad_signature`;
+  nothing else in the invocation is trusted until the raw-body HMAC passes.
 - **`dry_run` is emitted iff true.** An executing invocation's bytes are byte-identical to the
   pre-dry_run contract.
 - **`runtime`** is `ruby` | `go` | `python` ([decision 8](../decisions.md#8-runtime-tokens)). An
@@ -133,13 +136,15 @@ Optional but recommended ([decision 10](../decisions.md#10-health-endpoint)). Go
 [`fixtures/actions/health_response.json`](../fixtures/actions/health_response.json).
 
 ```
-GET {mount}/health   (signed: X-Webhook-Signature over the raw query string, empty string when there is none)
+GET {mount}/health?project_id=<uuid>   (signed: X-Webhook-Signature over the raw query string)
 → 200 + signed {"ok":true,"embassy":"ruby","version":"0.5.0","protocol":1,
                 "capabilities":["actions","dry_run","analysis_result","health"]}
 ```
 
-An **unsigned** request gets `404` — no existence leak. Capability tokens are additive; unknown ones
-are ignored by the reader.
+Map mode requires the project selector and signs the response with that project's secret. Missing,
+malformed or unknown ids get the same opaque unsigned `404` as an unsigned request, because no response
+key can be selected. Single-secret mode also accepts the legacy empty query. Capability tokens are
+additive; unknown ones are ignored by the reader.
 
 ## 6. Timeout budget
 

@@ -31,19 +31,29 @@ debt" in [`languages.md`](languages.md), never copy it.
 - Tenant-context policy: with strict tenant context enabled, an absent tuple is accepted only when
   the signed `action_id` is explicitly allowlisted; a non-allowlisted flat invocation refuses; a
   partial tuple still refuses for an allowlisted action; a complete tuple remains accepted for it.
-- Every refusal is signed. `405 + Allow: POST` is the only unsigned answer, class `method_not_allowed`.
-- Health: unsigned → 404; signed (over the raw query, `""` when none) → `health_response.json` with
-  `embassy`/`version` substituted.
+- Reverse-secret modes: single-secret behavior is unchanged; map hit selects by the unverified
+  `project_id`, verifies the raw body, and signs the response with the selected key; map miss/unknown
+  project and absent/malformed `project_id` both refuse as indistinguishable `401 bad_signature`
+  without executing, resolving or replay-recording anything. The selector-failure response is unsigned
+  because no response key exists; a map hit with a bad HMAC returns a signed `401 bad_signature`.
+- Every refusal with a selected secret is signed. `405 + Allow: POST` and map selector failures are the
+  only unsigned answers.
+- Health: single-secret mode accepts the legacy empty query; map mode requires a signed
+  `project_id=<uuid>` raw query and signs the response with that entry. Missing/unknown selector or bad
+  signature → opaque 404; map hit → `health_response.json` with `embassy`/`version` substituted.
 
 ## Result route
 - `result_callback.json` decodes into the port's types: `analysis_id`, `session_id`, draft
-  (markdown-first), `notes[].key == "summary"`, `actions[].slug`, `executed_actions[]`, `questions[]`,
-  `delete[]`, `metadata`.
+  (markdown-first), `project_id`, `notes[].key == "summary"`, `actions[].slug`, `executed_actions[]`,
+  `questions[]`, `delete[]`, `metadata`.
 - Ack bytes == `result_ack.json`.
 - Redelivery: 3 deliveries → 1 dispatch; a failed dispatch releases the nonce (2nd delivery
   dispatches again); stale `issued_at` → 409; unconfigured handler → 500 `handler_error`; any other
   handler exception (including non-`Exception` errors) → signed 500 `internal_error` with the class
   name only, nonce released; bad signature → `result_refusal_bad_signature.json` bytes.
+- Reverse-secret modes mirror the action route: single-secret mode accepts a legacy callback without
+  `project_id`; map hit selects and signs with that project's secret; unknown/missing/malformed
+  `project_id` is an unsigned opaque `401 bad_signature` and never dispatches or records a nonce.
 
 ## Analysis client
 - `trigger.json`, `trigger_with_principal.json`, `sent_message.json`, `answers.json`: structural

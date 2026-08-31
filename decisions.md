@@ -233,6 +233,29 @@ only controls which signed flat invocation a strict deployment accepts.
 
 ---
 
+## 14. A shared Embassy selects the reverse secret by signed `project_id`
+
+One app mount may serve several rootcause projects. A single deployment-wide reverse secret would let
+one project's leaked key authenticate as every sibling, even though the host already stores and signs
+with a distinct key per project.
+
+An Embassy therefore configures either the original single secret or a project UUID → secret map,
+never both. In map mode it parses only `project_id` from an unverified host → Embassy message, selects
+the candidate key, then verifies the exact raw bytes before trusting or acting on the payload. Missing,
+malformed and unknown selectors collapse to the same `bad_signature` refusal. That selector failure is
+necessarily unsigned: there is no trusted project key with which to sign it. A selected-key bad HMAC
+still receives the normal signed refusal.
+
+The action invocation already carried `project_id`; the async-analysis result callback now carries it
+too, and map-mode health probes put it in the signed raw query. This is additive under protocol 1:
+single-secret receivers keep accepting legacy callbacks/probes without it, while map-mode receivers
+require it. Embassy-originated calls select the local map entry from a project id supplied to the client
+call; no second wire identity mechanism is introduced.
+
+Rollout is ordered: hosts emit `project_id` on callbacks before an Embassy deployment enables map mode.
+
+---
+
 ## Fixture reconciliation notes
 
 The pre-hub goldens existed in two divergent copies. Resolved as follows:

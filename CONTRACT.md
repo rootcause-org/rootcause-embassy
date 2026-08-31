@@ -25,6 +25,27 @@ A leaked chat key must not buy action execution. No implementation may fall back
 in either direction. A **blank** key fails closed on both sides — HMAC with a zero-length key is
 trivially forgeable, so refuse to sign or verify with one.
 
+### One reverse secret or a per-project map
+
+An Embassy deployment configures exactly one of:
+
+- one non-blank `action_reverse_secret` (the original mode); or
+- a non-empty map of project UUID → non-blank `action_reverse_secret`.
+
+Map mode is deployment posture, not a protocol version. For a signed host → Embassy body, the
+Embassy reads `project_id` from the unverified JSON only to select the candidate secret, then verifies
+the exact raw bytes before trusting or acting on any field. Missing, malformed or unknown
+`project_id` is the same opaque `401 bad_signature` as a bad HMAC; it must not reveal whether a
+project is configured. Because no secret can be selected, that selector-failure response is the one
+exception to the signed-refusal rule below. Once a map entry is selected, every response — including
+a bad-HMAC refusal — is signed with that project's secret.
+
+Every signed host → Embassy body carries `project_id`. The health GET carries it in the signed raw
+query string. Single-secret mode keeps accepting legacy result callbacks and health probes without a
+project selector. Outbound Embassy → host calls select the map entry from the project id supplied to
+the client call; the wire body need not duplicate it where the host route already identifies the
+project.
+
 ## Signing (every HMAC message, both directions)
 
 - **HMAC-SHA256** over the **exact raw bytes transmitted**, keyed by `action_reverse_secret`.
@@ -73,7 +94,8 @@ Snake_case `class` codes. This is the whole vocabulary — an implementation inv
 
 `error` is `null` on success, else `{"class":"<snake_case>","message":"<str>","backtrace":"<str>?"}`.
 
-- **Every** outcome is signed, **including non-2xx refusals**. A refusal is a non-2xx status **and** a
+- **Every** outcome is signed, **including non-2xx refusals**, except a map-mode request whose missing,
+  malformed or unknown `project_id` prevents secret selection. A refusal is a non-2xx status **and** a
   signed body whose minimum is `{"ok":false,"error":{"class":…,"message":…}}`.
 - The host verifies the signature over the exact bytes **before** trusting the body, then surfaces
   `class`/`message`. An unverified/unparseable body (proxy 502, Embassy down) falls back to the bare

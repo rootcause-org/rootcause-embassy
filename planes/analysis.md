@@ -76,6 +76,7 @@ Golden: [`result_callback.json`](../fixtures/analysis/result_callback.json).
 {
   "analysis_id": "<run id>",
   "session_id": "<uuid>",
+  "project_id": "<uuid>",
   "draft": {"subject":"…","body_markdown":"…","body_html":"…"},
   "notes": [{"key":"summary","body_markdown":"…"}],
   "actions": [{"id":"…","slug":"…","label":"…","description":"…","url":"…","color":"#RRGGBB"}],
@@ -91,8 +92,11 @@ Golden: [`result_callback.json`](../fixtures/analysis/result_callback.json).
 }
 ```
 
-Required: `analysis_id`, `nonce`, `issued_at`. Everything else is omitted when empty — decode
-tolerantly.
+Required on newly emitted callbacks: `analysis_id`, `project_id`, `nonce`, `issued_at`. Everything else
+is omitted when empty — decode tolerantly. `project_id` is additive: single-secret deployments keep
+accepting legacy callbacks without it. A reverse-secret map deployment reads it from the unverified
+body only to select the candidate secret, then verifies the exact raw bytes before trusting the
+payload; missing, malformed or unknown ids refuse as opaque `401 bad_signature`.
 
 - **`nonce` equals the run id and is STABLE across redeliveries**; `issued_at` is fresh per attempt.
   A duplicate nonce on **this route** is an idempotent **`200 {"ok":true}` ack**, not a `409` — but
