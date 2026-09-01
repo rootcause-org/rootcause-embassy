@@ -11,10 +11,12 @@ the production widget with a host-minted preview token and records preview sessi
 end-user history with shorter retention.
 
 Use the sidebar to preview bubble/page presentation, locale, color scheme, consumer/power depth,
-branding, greeting, starter prompts, chat enablement, and exact origins. Copy or download the
-implementation brief when the behavior is right. Its Markdown contains the loader tag, backend-token
-claim contract, exact CSP, verification commands, and a fenced `replypen_brief: v1` YAML block—never a
-token or signing secret. The same output is available headlessly:
+branding, greeting, starter prompts, chat enablement, and exact origins. Project-wide choices are
+editable on the project Studio route; a tenant Studio route shows those choices read-only and lets a
+tenant admin change only that tenant's depth. Copy or download the implementation brief when the
+behavior is right. Its Markdown contains the loader tag, backend-token claim contract, exact CSP,
+verification commands, and a fenced `replypen_brief: v1` YAML block—never a token or signing secret.
+The same output is available headlessly:
 
 ```sh
 rc project chat brief --project acme [--tenant <slug>] --target bubble
