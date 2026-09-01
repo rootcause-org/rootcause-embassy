@@ -81,19 +81,19 @@ bundle.
 - **Self-fix:** Confirm the action id is approved and live in the project brain; do not substitute an unapproved script.
 - **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
 
-## ACTION_SECRETS_INVALID
-
-- **Meaning:** The per-project action-secret map contains a blank project or secret.
-- **Who fixes:** you.
-- **Self-fix:** Remove blank entries and provide one non-empty secret for every configured project.
-- **Escalate with:** The error line and only redacted map keys; never send secret values.
-
 ## ACTION_SECRET_REQUIRED
 
 - **Meaning:** Actions are partially configured without a usable verification secret.
 - **Who fixes:** you.
 - **Self-fix:** Set `ROOTCAUSE_ACTION_SECRET` or a complete per-project secret map, then restart the app.
 - **Escalate with:** The error line and redacted Embassy configuration; never send secrets.
+
+## ACTION_SECRETS_INVALID
+
+- **Meaning:** The per-project action-secret map contains a blank project or secret.
+- **Who fixes:** you.
+- **Self-fix:** Remove blank entries and provide one non-empty secret for every configured project.
+- **Escalate with:** The error line and only redacted map keys; never send secret values.
 
 ## ACTION_TIMEOUT_INVALID
 

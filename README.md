@@ -1,5 +1,9 @@
 # rootcause-embassy — the contract hub
 
+Integrating ReplyPen into your app? Start at [`docs/integrator/start-here.md`](docs/integrator/start-here.md).
+
+Porting or maintaining an Embassy? Start at [`CONTRACT.md`](CONTRACT.md).
+
 An **Embassy** is rootcause's trusted in-app presence inside a customer's own runtime. It is a small
 library (~2k LOC) the customer mounts in their app. It:
 

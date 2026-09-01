@@ -74,7 +74,9 @@ A GET has no body: the signature covers the **raw query string**. See
 
 ## Error vocabulary
 
-Snake_case `class` codes. This is the whole vocabulary — an implementation invents no others.
+Snake_case `class` codes. This is the whole action/result wire-refusal vocabulary — an implementation
+invents no others. SCREAMING_SNAKE integrator diagnostics are a separate, non-wire namespace
+catalogued in [`docs/integrator/errors.md`](docs/integrator/errors.md).
 
 | HTTP | `class` | Meaning |
 |---|---|---|

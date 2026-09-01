@@ -82,6 +82,10 @@ Do not "document what the code does" here. Decide what the wire is, write it her
 match. When you find code and contract disagreeing, the contract wins unless the code is protecting
 against something the contract missed — in which case, fix the contract first.
 
+Any customer-facing change to a plane also updates the matching `docs/integrator/` playbook and every
+affected section of `docs/integrator/errors.md`. A public API change without integrator guidance is
+incomplete.
+
 ## Style
 
 Plain language, terse, high-signal — read by agents and humans. Lead with the delta. No changelog
