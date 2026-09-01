@@ -398,14 +398,14 @@ bundle.
 
 ## EMBASSY_HEALTH_INVALID
 
-- **Meaning:** The Embassy health response is missing required fields, malformed, unsigned, or signed incorrectly.
+- **Meaning:** The signed Embassy health response is malformed, oversized, unsuccessful, or missing required fields.
 - **Who fixes:** you.
 - **Self-fix:** Upgrade the Embassy, verify its signed `/health` route and protocol fields, and replay the health fixture.
 - **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
 
 ## EMBASSY_MODE_REQUIRED
 
-- **Meaning:** Action execution needs an Embassy mode, but the project has no usable mode configured.
+- **Meaning:** The project uses hosted actions, so there is no Embassy action mount to probe.
 - **Who fixes:** operator.
 - **Self-fix:** Ask the operator to select the intended Embassy execution mode before testing a real action.
 - **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
@@ -447,7 +447,7 @@ bundle.
 
 ## EMBASSY_RESULT_INVALID
 
-- **Meaning:** The Embassy response is malformed, oversized, unsigned, or fails signature verification.
+- **Meaning:** The signature-verified Embassy action result is malformed, oversized, or not valid JSON.
 - **Who fixes:** you.
 - **Self-fix:** Upgrade the Embassy and replay the signed result fixtures over the exact transmitted bytes.
 - **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
