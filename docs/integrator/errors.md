@@ -651,6 +651,34 @@ bundle.
 - **Self-fix:** Mint `principal.kind`, `external_id`, `asserted_by`, and `assurance` from the authenticated backend.
 - **Escalate with:** The error line, redacted claim names, and `rc project chat doctor --bundle`.
 
+## PREVIEW_PRINCIPAL_INVALID
+
+- **Meaning:** Chat Studio cannot bind the preview to a valid declared principal identity.
+- **Who fixes:** you.
+- **Self-fix:** Select a declared principal kind and enter the external ID of a real authenticated app identity; for a flat project with no principal kinds, clear both fields.
+- **Escalate with:** The error line and public principal kind only; never send the external ID.
+
+## PREVIEW_SETTINGS_INVALID
+
+- **Meaning:** Chat Studio rejected one or more presentation, branding, origin, or depth settings.
+- **Who fixes:** you.
+- **Self-fix:** Correct the field shown by Studio; origins must be exact `scheme://host[:port]`, colors must be hex, and prompts must stay within the displayed limits.
+- **Escalate with:** The error line and redacted setting names; never send secrets or personal data.
+
+## PREVIEW_TENANT_REQUIRED
+
+- **Meaning:** Chat Studio or the implementation brief needs a tenant-bound scope for this project.
+- **Who fixes:** you.
+- **Self-fix:** Choose an active tenant you can access, then reload the preview or brief. Never fall back to project-wide data.
+- **Escalate with:** The error line and tenant slug only.
+
+## PREVIEW_TOKEN_UNAVAILABLE
+
+- **Meaning:** ReplyPen cannot mint the short-lived host-only Chat Studio preview token.
+- **Who fixes:** ReplyPen operator.
+- **Self-fix:** None; public chat and customer signing credentials are unaffected.
+- **Escalate with:** The error line, project slug, and timestamp only.
+
 ## RATE_LIMITED
 
 - **Meaning:** The caller or origin exceeded the chat request budget.

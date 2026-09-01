@@ -3,6 +3,23 @@
 Your backend mints identity; the widget renders chat; the ReplyPen host owns sessions and runs. The
 browser never receives either long-lived secret.
 
+## Begin in Chat Studio
+
+Open **Chat Studio** from the project's ReplyPen navigation. Tenant-enabled projects require a tenant;
+principal-scoped projects require one declared principal kind and a real external ID. The canvas loads
+the production widget with a host-minted preview token and records preview sessions separately from
+end-user history with shorter retention.
+
+Use the sidebar to preview bubble/page presentation, locale, color scheme, consumer/power depth,
+branding, greeting, starter prompts, chat enablement, and exact origins. Copy or download the
+implementation brief when the behavior is right. Its Markdown contains the loader tag, backend-token
+claim contract, exact CSP, verification commands, and a fenced `replypen_brief: v1` YAML block—never a
+token or signing secret. The same output is available headlessly:
+
+```sh
+rc project chat brief --project acme [--tenant <slug>] --target bubble
+```
+
 ## Token claims
 
 Mint an HS256 JWT with the chat signing secret. The payload is:
