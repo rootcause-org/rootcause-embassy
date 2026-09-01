@@ -13,6 +13,6 @@ health, dry run, host workflow smoke, then one harmless confirmed action.
 Keep `ROOTCAUSE_ACTION_SECRET` in the backend and separate from the chat secret. Use the sibling
 language Embassy README for framework mounting and runtime rules.
 
-On any `[ReplyPen] CODE` line, open `../../docs/integrator/errors.md#code` and follow **Self-fix**. If
-**Who fixes** is `operator`, run `rc dev action doctor --bundle` (not in `rc` yet — until it ships, use the manual bundle) and follow
+On any `[ReplyPen] CODE` line, open `../../docs/integrator/errors.md#<code-lowercased>` and follow **Self-fix**. If
+**Who fixes** is `operator`, run `rc dev action doctor <action-id> --bundle` and follow
 [`../../docs/integrator/escalate.md`](../../docs/integrator/escalate.md).

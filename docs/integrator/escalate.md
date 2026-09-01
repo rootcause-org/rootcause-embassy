@@ -5,25 +5,24 @@ the same code, or when an action outcome is uncertain. Never retry an uncertain 
 
 ## Capture a redacted bundle
 
-These commands are **not in `rc` yet** (check `rc help`). Use the manual bundle below until they ship.
-
-Chat:
+Chat — not in `rc` yet (check `rc help`); use the manual bundle below until it lands:
 
 ```sh
 rc project chat doctor --bundle
 ```
 
-Actions:
+Actions — available today:
 
 ```sh
-rc dev action doctor --bundle
+rc dev action doctor <action-id> --bundle
+rc dev action doctor <action-id> --params '{"...":"..."}' --bundle   # exercise the real preflight
 ```
 
 The bundle contains project slug, CLI and Embassy versions when known, configuration booleans and
 origins, redacted recent rejects, probe results, and timestamps. It must not contain secrets, token
 bytes, provider names, stack traces, personal data, or private host details. Review it before sending.
 
-## Manual bundle (until the doctor commands ship)
+## Manual chat bundle (until `rc project chat doctor` ships)
 
 Assemble the same fields by hand — no secrets, no token bytes:
 

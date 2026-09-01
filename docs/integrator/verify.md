@@ -4,14 +4,14 @@ Run the doctor first when stuck:
 
 ```sh
 rc project chat doctor
-rc dev action doctor
+rc dev action doctor <action-id>
 ```
 
-Neither command is in `rc` yet (check `rc help`); every rung below is runnable without them. Use `--bundle` only for escalation because its output is
-designed for sharing. Rungs 1–2 are fully local. Rungs 3–6 require the operator to have supplied the
-secret and confirmed project, origins, principal kinds, and tenants; the doctor command is not a
-prerequisite until its stated `rc` version lands. Complete each rung in order; a higher rung does not
-replace a lower one.
+`rc dev action doctor <action-id>` ships today; `rc project chat doctor` does not yet — check
+`rc help`. Every chat rung below is runnable without it. Use `--bundle` only for escalation, because
+its output is shaped for sharing. Rungs 1–2 are fully local. Rungs 3–6 require the operator to have
+supplied the secret and confirmed project, origins, principal kinds, and tenants. Complete each rung
+in order; a higher rung does not replace a lower one.
 
 ## Chat
 
@@ -92,20 +92,25 @@ replace a lower one.
 
 7. Probes and dry run
 
-   Command: `rc dev action doctor` once it ships. Until then, run the three probes yourself:
+   Command:
 
    ```sh
-   curl -i -X GET <mount>                                    # 1. mount exists
-   sig=$(printf 'project_id=<uuid>' | openssl dgst -sha256 -hmac "$ROOTCAUSE_ACTION_SECRET" -r | cut -d' ' -f1)
-   curl -i "<mount>/health?project_id=<uuid>" -H "X-Webhook-Signature: $sig"   # 2. signed health
+   rc dev action doctor <action-id>
+   rc dev action doctor <action-id> --params '{"...":"..."}'   # adds the dry-run preflight
    ```
 
-   Then 3: ask the operator to replay an approved action with `dry_run: true`, or POST a signed
-   invocation built from [`../../fixtures/actions/invocation_dry_run.json`](../../fixtures/actions/invocation_dry_run.json).
+   Expect: resolution ok, mount present, signed protocol `1` health with the Embassy version and
+   capability tokens, and a preflight that reports `would_execute` with no data change.
 
-   Expect: `405` with `Allow: POST`; then signed protocol `1` health with the Embassy version and
-   capability tokens; then `would_execute: true` with no data change. An unsigned health request
-   returns an opaque `404` by design.
+   You can also probe the mount directly from your own network:
+
+   ```sh
+   curl -i -X GET <mount>                                     # expect 405 + Allow: POST
+   sig=$(printf 'project_id=<uuid>' | openssl dgst -sha256 -hmac "$ROOTCAUSE_ACTION_SECRET" -r | cut -d' ' -f1)
+   curl -i "<mount>/health?project_id=<uuid>" -H "X-Webhook-Signature: $sig"
+   ```
+
+   An unsigned health request returns an opaque `404` by design.
 
    On failure: use the returned refusal, commonly [`BAD_SIGNATURE`](errors.md#bad_signature),
    [`RESOLVE_FAILED`](errors.md#resolve_failed), or [`SCHEMA_VIOLATION`](errors.md#schema_violation).
@@ -130,5 +135,5 @@ replace a lower one.
 
    Expect: `proposed → executing → succeeded`, one intended change, and a signed Embassy result.
 
-   On failure or uncertain outcome: do not retry blindly. Run `rc dev action doctor --bundle` and
+   On failure or uncertain outcome: do not retry blindly. Run `rc dev action doctor <action-id> --bundle` and
    escalate.

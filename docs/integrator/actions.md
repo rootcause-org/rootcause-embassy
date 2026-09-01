@@ -45,11 +45,12 @@ Run these before any real action:
 Start troubleshooting with:
 
 ```sh
-rc dev action doctor
+rc dev action doctor <action-id>
+rc dev action doctor <action-id> --params '{"...":"..."}' --bundle
 ```
 
-That command is not in `rc` yet; run the three probes yourself as shown in
-[`verify.md`](verify.md) rung 7, or ask the operator to run the host-side probe.
+It runs resolution, the mount and signed-health probes, and (with `--params`) the dry-run preflight.
+See [`verify.md`](verify.md) rung 7 for the equivalent hand-run probes.
 
 ## Script rules by runtime
 
