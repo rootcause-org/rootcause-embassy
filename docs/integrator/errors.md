@@ -11,12 +11,33 @@ The widget writes `console.error("[ReplyPen] <CODE>: <hint> — <docs>")`. Never
 secrets, personal data, private host details, provider names, costs, or stack traces in an error or
 bundle.
 
+## ACTION_CLOCK_SKEW_INVALID
+
+- **Meaning:** The configured action clock-skew allowance is outside the safe range.
+- **Who fixes:** you.
+- **Self-fix:** Set a non-negative allowance no greater than the documented maximum, then restart the app.
+- **Escalate with:** The error line, Embassy version, and redacted action configuration.
+
 ## ACTION_CONFLICT
 
 - **Meaning:** The chat action proposal could not be settled safely; its state may have changed.
 - **Who fixes:** operator.
 - **Self-fix:** Re-read the action card/session. Do not repeat a confirmation while the outcome is unknown.
 - **Escalate with:** The error line and `rc dev action doctor --bundle`.
+
+## ACTION_DEADLINE_INVALID
+
+- **Meaning:** The configured action deadline is outside the safe range.
+- **Who fixes:** you.
+- **Self-fix:** Set a positive deadline within the documented maximum, then restart the app.
+- **Escalate with:** The error line, Embassy version, and redacted action configuration.
+
+## ACTION_EXECUTION_FAILED
+
+- **Meaning:** The approved action script could not complete successfully.
+- **Who fixes:** you.
+- **Self-fix:** Inspect the safe execution result, fix the app dependency or handler, and do not retry while the outcome is uncertain.
+- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
 
 ## ACTION_EXECUTOR_UNAVAILABLE
 
@@ -32,12 +53,54 @@ bundle.
 - **Self-fix:** Inspect the action's customer-safe result, fix the script or app dependency, and do not retry while the outcome is uncertain.
 - **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
 
+## ACTION_FETCH_URL_REQUIRED
+
+- **Meaning:** Actions are enabled, but no signed script-fetch URL is configured.
+- **Who fixes:** you.
+- **Self-fix:** Set `ROOTCAUSE_FETCH_URL` to the host-provided HTTPS endpoint and restart the app.
+- **Escalate with:** The error line, Embassy version, and redacted action configuration.
+
+## ACTION_PLANE_DISABLED
+
+- **Meaning:** An action or result route was called while the Embassy action plane is disabled.
+- **Who fixes:** you.
+- **Self-fix:** Configure the complete action plane, or treat this 503 as expected in chat-only mode.
+- **Escalate with:** The error line and redacted Embassy configuration; never send secrets.
+
+## ACTION_PROJECT_UNKNOWN
+
+- **Meaning:** The action request names a project that has no configured verification secret.
+- **Who fixes:** operator.
+- **Self-fix:** Confirm the project slug and configure that project's action secret without exposing it.
+- **Escalate with:** The error line, project slug, Embassy version, and `rc dev action doctor --bundle`.
+
 ## ACTION_RESOLVE_FAILED
 
 - **Meaning:** ReplyPen could not resolve the approved action definition and pinned script digest.
 - **Who fixes:** operator.
 - **Self-fix:** Confirm the action id is approved and live in the project brain; do not substitute an unapproved script.
 - **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+
+## ACTION_SECRETS_INVALID
+
+- **Meaning:** The per-project action-secret map contains a blank project or secret.
+- **Who fixes:** you.
+- **Self-fix:** Remove blank entries and provide one non-empty secret for every configured project.
+- **Escalate with:** The error line and only redacted map keys; never send secret values.
+
+## ACTION_SECRET_REQUIRED
+
+- **Meaning:** Actions are partially configured without a usable verification secret.
+- **Who fixes:** you.
+- **Self-fix:** Set `ROOTCAUSE_ACTION_SECRET` or a complete per-project secret map, then restart the app.
+- **Escalate with:** The error line and redacted Embassy configuration; never send secrets.
+
+## ACTION_TIMEOUT_INVALID
+
+- **Meaning:** The configured action execution timeout is outside the safe range.
+- **Who fixes:** you.
+- **Self-fix:** Set a positive timeout no greater than the action deadline, then restart the app.
+- **Escalate with:** The error line, Embassy version, and redacted duration settings.
 
 ## ACTIONS_DISABLED
 
@@ -53,12 +116,131 @@ bundle.
 - **Self-fix:** Keep the card non-actionable and ask the operator to verify action enablement and the Embassy mount.
 - **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
+## ANALYSIS_BODY_REQUIRED
+
+- **Meaning:** An analysis trigger was requested without content to analyze.
+- **Who fixes:** you.
+- **Self-fix:** Supply a non-empty body before calling the trigger helper.
+- **Escalate with:** The error line and a redacted request shape.
+
+## ANALYSIS_REQUEST_INVALID
+
+- **Meaning:** The Embassy could not construct a valid analysis-trigger request.
+- **Who fixes:** you.
+- **Self-fix:** Check the trigger URL and request fields, then retry with documented values.
+- **Escalate with:** The error line, Embassy version, and a redacted request shape.
+
+## ANALYSIS_RESPONSE_INVALID
+
+- **Meaning:** The analysis-trigger endpoint returned an invalid or unsuccessful response.
+- **Who fixes:** operator.
+- **Self-fix:** Verify the configured endpoint and host health; do not parse the response as success.
+- **Escalate with:** The error line, HTTP status, and a redacted response shape.
+
+## ANALYSIS_TRIGGER_URL_REQUIRED
+
+- **Meaning:** Analysis triggering was requested without a configured endpoint.
+- **Who fixes:** you.
+- **Self-fix:** Set `ROOTCAUSE_TRIGGER_URL` to the host-provided HTTPS endpoint and restart the app.
+- **Escalate with:** The error line and redacted Embassy configuration.
+
+## API_BASE_URL_INVALID
+
+- **Meaning:** The configured ReplyPen API base URL is malformed or unsafe.
+- **Who fixes:** you.
+- **Self-fix:** Use the exact host-provided HTTP or HTTPS origin without credentials, query, or fragment.
+- **Escalate with:** The error line and the redacted base URL.
+
+## API_BASE_URL_REQUIRED
+
+- **Meaning:** An API call was requested without a configured ReplyPen API base URL.
+- **Who fixes:** you.
+- **Self-fix:** Set `ROOTCAUSE_API_BASE_URL` and restart the app.
+- **Escalate with:** The error line and redacted Embassy configuration.
+
+## API_KEY_REQUIRED
+
+- **Meaning:** An API call was requested without a ReplyPen API key.
+- **Who fixes:** you.
+- **Self-fix:** Set `ROOTCAUSE_API_KEY` in the app environment and restart; never log the value.
+- **Escalate with:** The error line and only whether the variable is present; never send the key.
+
+## API_METHOD_INVALID
+
+- **Meaning:** The API helper received an empty or malformed HTTP method.
+- **Who fixes:** you.
+- **Self-fix:** Pass a standard uppercase HTTP method supported by the target route.
+- **Escalate with:** The error line and redacted call shape.
+
+## API_ORIGIN_MISMATCH
+
+- **Meaning:** An API path resolved outside the configured ReplyPen API origin.
+- **Who fixes:** you.
+- **Self-fix:** Pass a relative API path on the configured origin; never construct a cross-origin target.
+- **Escalate with:** The error line, base origin, and redacted path.
+
+## API_PATH_INVALID
+
+- **Meaning:** The API helper received a malformed request path.
+- **Who fixes:** you.
+- **Self-fix:** Pass a valid relative path without credentials or an alternate origin.
+- **Escalate with:** The error line and redacted path.
+
+## API_PATH_REQUIRED
+
+- **Meaning:** The API helper was called without a request path.
+- **Who fixes:** you.
+- **Self-fix:** Supply the documented route path.
+- **Escalate with:** The error line and caller location.
+
+## API_REQUEST_INVALID
+
+- **Meaning:** The API helper could not encode or create the outbound request.
+- **Who fixes:** you.
+- **Self-fix:** Validate the request value and route path before retrying.
+- **Escalate with:** The error line, Embassy version, and redacted request shape.
+
+## API_RESPONSE_INVALID
+
+- **Meaning:** The ReplyPen API response was malformed or could not be decoded safely.
+- **Who fixes:** operator.
+- **Self-fix:** Confirm host compatibility and retry only if the operation is safe to repeat.
+- **Escalate with:** The error line, HTTP status, and a redacted response shape.
+
+## API_TRANSPORT_ERROR
+
+- **Meaning:** The app could not complete the network request to the ReplyPen API.
+- **Who fixes:** operator.
+- **Self-fix:** Check DNS, TLS, egress, and host availability before a safe retry.
+- **Escalate with:** The error line, target hostname, and request timing; never send credentials.
+
 ## ATTACHMENT_ALREADY_SENT
 
 - **Meaning:** This upload is already bound to another message and cannot be reused.
 - **Who fixes:** you.
 - **Self-fix:** Upload the file again and use the new `attachment_id` in exactly one message.
 - **Escalate with:** The error line and `rc project chat doctor --bundle` if a new upload also fails.
+
+## ATTACHMENT_INVALID
+
+- **Meaning:** A Go Embassy attachment is missing a valid name, MIME type, reader, or size.
+- **Who fixes:** you.
+- **Self-fix:** Populate every required attachment field with the actual non-negative file size.
+- **Escalate with:** The error line and file metadata without contents.
+
+## ATTACHMENT_TOO_LARGE
+
+- **Meaning:** One Go Embassy attachment exceeds the per-file upload limit.
+- **Who fixes:** you.
+- **Self-fix:** Reject or shrink the file before calling the Embassy helper.
+- **Escalate with:** The error line and file name, MIME type, and size without contents.
+
+## ATTACHMENTS_TOO_LARGE
+
+- **Meaning:** The combined Go Embassy attachment payload exceeds the request limit.
+- **Who fixes:** you.
+- **Self-fix:** Send fewer or smaller files while keeping every file within its individual limit.
+- **Escalate with:** The error line and redacted file metadata without contents.
 
 ## ATTACHMENTS_UNAVAILABLE
 
@@ -109,12 +291,47 @@ bundle.
 - **Self-fix:** Replay `fixtures/chat/jwt_vector.json`, check the backend clock, and compare `aud`, `iss`, `origin`, and expiry.
 - **Escalate with:** The error line and `rc project chat doctor --bundle`; never paste the token.
 
+## CHAT_BASE_URL_INVALID
+
+- **Meaning:** The configured chat base URL is malformed or unsafe.
+- **Who fixes:** you.
+- **Self-fix:** Use the default or an exact HTTP or HTTPS ReplyPen origin without credentials, query, or fragment.
+- **Escalate with:** The error line and redacted base URL.
+
 ## CHAT_DISABLED
 
 - **Meaning:** Embedded chat is disabled for the project.
 - **Who fixes:** operator.
 - **Self-fix:** Confirm the intended project slug, then ask the operator to enable chat for it.
 - **Escalate with:** The error line and `rc project chat doctor --bundle`.
+
+## CHAT_EXTERNAL_ID_REQUIRED
+
+- **Meaning:** Chat token minting was attempted without the app's authenticated external user id.
+- **Who fixes:** you.
+- **Self-fix:** Resolve the external id from the server-side app session; never accept it from browser input.
+- **Escalate with:** The error line and the redacted server-side identity mapping.
+
+## CHAT_PROJECT_REQUIRED
+
+- **Meaning:** Chat token minting was attempted without a project slug.
+- **Who fixes:** you.
+- **Self-fix:** Set `ROOTCAUSE_CHAT_PROJECT` to the operator-provided slug and restart the app.
+- **Escalate with:** The error line and redacted chat configuration.
+
+## CHAT_SECRET_REQUIRED
+
+- **Meaning:** Chat token minting was attempted without a signing secret.
+- **Who fixes:** you.
+- **Self-fix:** Set `ROOTCAUSE_CHAT_SECRET` in the server environment and restart; never expose it to the browser.
+- **Escalate with:** The error line and only whether the variable is present; never send the secret.
+
+## CHAT_SECRET_REUSED
+
+- **Meaning:** The same secret was configured for chat JWTs and action HMAC verification.
+- **Who fixes:** you.
+- **Self-fix:** Provision distinct random secrets for the chat and action planes, then restart the app.
+- **Escalate with:** The error line and only secret fingerprints from an approved doctor command.
 
 ## EMBASSY_HEALTH_INVALID
 
@@ -242,6 +459,13 @@ bundle.
 - **Self-fix:** Verify the result handler is registered, loadable, and succeeds for the redacted conformance fixture.
 - **Escalate with:** The error line, Embassy version, hub SHA, and `rc dev action doctor --bundle`.
 
+## HOST_REFUSED
+
+- **Meaning:** The ReplyPen host refused an API request without a more specific stable code.
+- **Who fixes:** operator.
+- **Self-fix:** Read the safe host hint, verify the request contract, and do not infer success.
+- **Escalate with:** The error line, HTTP status, request path, and redacted response shape.
+
 ## INTERNAL
 
 - **Meaning:** The chat host could not complete a request for a reason the integrator cannot repair from the request.
@@ -290,6 +514,13 @@ bundle.
 - **Who fixes:** you.
 - **Self-fix:** Fetch a fresh token from your backend and attach it as a Bearer token; do not place it in the URL.
 - **Escalate with:** The error line and `rc project chat doctor --bundle`; never paste the token.
+
+## ORIGIN_INVALID
+
+- **Meaning:** The origin supplied for chat token minting is not a canonical HTTP or HTTPS origin.
+- **Who fixes:** you.
+- **Self-fix:** Derive the exact public app origin server-side and omit paths, credentials, query, and fragment.
+- **Escalate with:** The error line and redacted origin.
 
 ## ORIGIN_MISMATCH
 
@@ -347,6 +578,34 @@ bundle.
 - **Self-fix:** Compare param keys/types with the action manifest and pass tenant identity only through the trusted tuple.
 - **Escalate with:** The error line, redacted param keys/schema, and `rc dev action doctor --bundle`.
 
+## SENT_MESSAGE_CONTENT_REQUIRED
+
+- **Meaning:** Sent-message reporting was attempted without message content.
+- **Who fixes:** you.
+- **Self-fix:** Supply a non-empty subject or body according to the sent-message contract.
+- **Escalate with:** The error line and redacted request shape.
+
+## SENT_MESSAGE_INVALID
+
+- **Meaning:** The Embassy could not construct a valid sent-message report.
+- **Who fixes:** you.
+- **Self-fix:** Validate the session id, recipients, and content fields before retrying.
+- **Escalate with:** The error line, Embassy version, and redacted request shape.
+
+## SENT_MESSAGE_RESPONSE_INVALID
+
+- **Meaning:** The sent-message endpoint returned an invalid or unsuccessful response.
+- **Who fixes:** operator.
+- **Self-fix:** Verify endpoint compatibility and do not report the message twice while acceptance is uncertain.
+- **Escalate with:** The error line, HTTP status, and redacted response shape.
+
+## SENT_MESSAGE_URL_REQUIRED
+
+- **Meaning:** Sent-message reporting was requested without a configured endpoint.
+- **Who fixes:** you.
+- **Self-fix:** Set `ROOTCAUSE_SENT_MESSAGE_URL` to the host-provided HTTPS endpoint and restart the app.
+- **Escalate with:** The error line and redacted Embassy configuration.
+
 ## SESSION_CLOSED
 
 - **Meaning:** The session is readable but no longer accepts new turns or decisions.
@@ -360,6 +619,13 @@ bundle.
 - **Who fixes:** you.
 - **Self-fix:** Resume only with tokens minted for the same authenticated identity, tenant, and origin; otherwise open a new session.
 - **Escalate with:** The error line, redacted claim shapes, and `rc project chat doctor --bundle`.
+
+## SESSION_ID_REQUIRED
+
+- **Meaning:** An Embassy helper requiring chat continuity was called without a session id.
+- **Who fixes:** you.
+- **Self-fix:** Preserve and pass the ReplyPen session id without accepting a browser-forged replacement.
+- **Escalate with:** The error line and redacted request flow.
 
 ## TENANT_NOT_SUPPORTED
 
@@ -382,12 +648,33 @@ bundle.
 - **Self-fix:** Confirm the intended tenant slug and ask the operator to inspect its status; do not fall back to unscoped access.
 - **Escalate with:** The error line, tenant slug, and `rc project chat doctor --bundle`.
 
+## TOKEN_EXCHANGE_FAILED
+
+- **Meaning:** The host refused or could not complete a chat token exchange.
+- **Who fixes:** operator.
+- **Self-fix:** Mint a fresh backend token and verify project, principal, origin, and clock configuration.
+- **Escalate with:** The error line and `rc project chat doctor --bundle`; never paste the token.
+
+## TOKEN_MINT_FAILED
+
+- **Meaning:** The Go Embassy could not sign a valid chat JWT.
+- **Who fixes:** you.
+- **Self-fix:** Validate chat configuration, origin, claims, and server clock, then mint a fresh token.
+- **Escalate with:** The error line, Embassy version, and redacted claims; never send a token or secret.
+
 ## TOKEN_REPLAYED
 
 - **Meaning:** The token's single-use `jti` already opened a session.
 - **Who fixes:** you.
 - **Self-fix:** Mint a fresh token with a new UUID `jti` for every new session/render; keep the original page token for its existing session calls.
 - **Escalate with:** The error line, mint/open timestamps, and `rc project chat doctor --bundle`; never paste either token.
+
+## TOKEN_TTL_INVALID
+
+- **Meaning:** The requested chat-token lifetime is outside the allowed range.
+- **Who fixes:** you.
+- **Self-fix:** Use the two-hour default or a positive duration no greater than 24 hours.
+- **Escalate with:** The error line and requested duration.
 
 ## TOO_LARGE
 
