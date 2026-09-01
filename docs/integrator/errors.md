@@ -760,6 +760,13 @@ bundle.
 - **Self-fix:** Use `https://app.replypen.com/chat/widget/v1/loader.js?v=2` exactly and remove proxy path rewriting.
 - **Escalate with:** The console error, requested URL without token/query data, and `rc project chat doctor --bundle`.
 
+## WIDGET_MODE_INVALID
+
+- **Meaning:** The Go widget helper received a mode other than empty or `page`.
+- **Who fixes:** you.
+- **Self-fix:** Use `page` for an embedded surface or leave mode empty for the floating widget.
+- **Escalate with:** The error line, Embassy version, and redacted widget configuration.
+
 ## WIDGET_PANEL_NOT_FOUND
 
 - **Meaning:** The loader ran but the ReplyPen panel or launcher iframe returned `404`.
@@ -773,3 +780,10 @@ bundle.
 - **Who fixes:** you.
 - **Self-fix:** Add `https://app.replypen.com` to `script-src`, `frame-src`, and `connect-src`; do not add unsafe directives.
 - **Escalate with:** The console CSP line, redacted CSP directives, and `rc project chat doctor --bundle`.
+
+## WIDGET_TARGET_INVALID
+
+- **Meaning:** The Go widget helper received page mode without a target, or a target outside page mode.
+- **Who fixes:** you.
+- **Self-fix:** Set one non-empty CSS selector only when mode is `page`; omit target for the floating widget.
+- **Escalate with:** The error line, Embassy version, and redacted widget configuration.
