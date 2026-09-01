@@ -22,6 +22,28 @@ The same output is available headlessly:
 rc project chat brief --project acme [--tenant <slug>] --target bubble
 ```
 
+## Resolve the authenticated identity
+
+Chat tokens carry your app's canonical external ID, not an email address guessed by the browser. A
+project admin can prove the project's host-side `email_lookup` and obtain that ID without receiving the
+matched database row:
+
+```sh
+rc --project acme project principals resolve --kind acme_user --email authenticated@example.com
+```
+
+For a tenant-enabled project, add `--tenant <slug>`. If your backend already has the canonical ID,
+exercise the explicit passthrough instead:
+
+```sh
+rc --project acme project principals resolve --kind acme_user --external-id user-8f3
+```
+
+Exactly one of `--email` or `--external-id` is required. Resolution is project-admin-only, audited
+without email/ID/row values, and returns only the declared kind, canonical external ID, and source.
+The application's authenticated backend must perform this mapping; never accept either value from
+browser input.
+
 ## Token claims
 
 Mint an HS256 JWT with the chat signing secret. The payload is:
@@ -246,6 +268,19 @@ received, show `errorText`, and continue draining the transport through `finish`
 redacted decoded golden is a vocabulary/ordering reference and may include success and error examples
 that do not normally occur in one production turn:
 [`../../fixtures/chat/sse_frames.jsonl`](../../fixtures/chat/sse_frames.jsonl).
+
+For a command-line smoke test, mint a token and send directly. `--session` resumes an existing
+conversation; repeated `--answer key=value` flags answer the latest `data-questions` set using its
+declared question types:
+
+```sh
+rc --project acme project chat send 'Show my latest invoice' --token '<embed-token>'
+rc --project acme project chat send --token '<fresh-token>' --session '<uuid>' --answer area=billing
+```
+
+The command exits non-zero for host 4xx/5xx responses and SSE `error` frames. If the stream started,
+its final line is `run_id: <id>`; use `rc --project acme run list --session <uuid>` to recover every
+run in that conversation and drill into one with `rc run debug <run-id>`.
 
 ### Read one session
 

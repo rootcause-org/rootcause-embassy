@@ -3,7 +3,7 @@
 Run the doctor first when stuck:
 
 ```sh
-rc project chat doctor [--origin https://app.acme.example] [--principal-kind acme_user]
+rc project chat doctor [--origin https://app.acme.example] [--principal-kind acme_user] [--since 30m|1h|24h]
 rc dev action doctor <action-id>
 ```
 
@@ -37,7 +37,25 @@ does not replace a lower one.
    bad mode/target as [`WIDGET_MODE_INVALID`](errors.md#widget_mode_invalid) /
    [`WIDGET_TARGET_INVALID`](errors.md#widget_target_invalid).
 
-3. Open a session
+3. Resolve the authenticated principal
+
+   Command (project admin):
+
+   ```sh
+   rc --project acme project principals resolve --kind acme_user --email authenticated@example.com
+   ```
+
+   Add `--tenant <slug>` for a tenant-enabled project. If the app already stores the canonical ID,
+   repeat with `--external-id <id>` instead of `--email` to prove passthrough.
+
+   Expect: the canonical external ID only in human output. Use it as `principal.external_id` in the
+   freshly minted token; never put the email there unless the manifest explicitly defines email as its ID.
+
+   On failure: [`PRINCIPAL_LOOKUP_NOT_CONFIGURED`](errors.md#principal_lookup_not_configured),
+   [`PRINCIPAL_NOT_FOUND`](errors.md#principal_not_found), or
+   [`PRINCIPAL_LOOKUP_FAILED`](errors.md#principal_lookup_failed).
+
+4. Open a session
 
    Command:
 
@@ -52,7 +70,7 @@ does not replace a lower one.
    On failure: use the returned code; common codes are [`ORIGIN_NOT_ALLOWED`](errors.md#origin_not_allowed)
    and [`BAD_TOKEN`](errors.md#bad_token).
 
-4. Prove replay protection
+5. Prove replay protection
 
    Command: repeat rung 3 with the exact same token.
 
@@ -60,7 +78,7 @@ does not replace a lower one.
 
    Any second `200` is a security failure. Escalate with a chat bundle.
 
-5. Stream one turn
+6. Stream one turn
 
    Command:
 
@@ -74,10 +92,20 @@ does not replace a lower one.
 
    Expect: SSE frames through `finish`, then `data: [DONE]`.
 
+   CLI equivalent:
+
+   ```sh
+   rc --project acme project chat send 'Hello' --token '<page-token>'
+   rc --project acme run list --session '<uuid>'
+   ```
+
+   Expect the send's final line to name the run ID. A host error response or SSE `error` must produce
+   a non-zero exit.
+
    On failure: [`SESSION_DRIFT`](errors.md#session_drift),
    [`RUN_IN_FLIGHT`](errors.md#run_in_flight), or the returned code.
 
-6. Browser origins
+7. Browser origins
 
    Command: open the real widget once on an allowed origin and once on a host absent from
    `chat_origins`.
@@ -89,7 +117,7 @@ does not replace a lower one.
 
 ## Actions
 
-7. Probes and dry run
+8. Probes and dry run
 
    Command:
 
@@ -114,7 +142,7 @@ does not replace a lower one.
    On failure: use the returned refusal, commonly [`BAD_SIGNATURE`](errors.md#bad_signature),
    [`RESOLVE_FAILED`](errors.md#resolve_failed), or [`SCHEMA_VIOLATION`](errors.md#schema_violation).
 
-8. Host workflow smoke
+9. Host workflow smoke
 
    Command:
 
@@ -127,7 +155,7 @@ does not replace a lower one.
 
    On failure: capture the run id; never paste an unredacted debug artifact into a public issue.
 
-9. Real gated action
+10. Real gated action
 
    Command: trigger one harmless proposal, inspect its params and digest, confirm it, then inspect the
    resulting run.

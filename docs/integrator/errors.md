@@ -12,7 +12,7 @@ secrets, personal data, private host details, provider names, costs, or stack tr
 bundle.
 
 `rc dev action doctor <action-id> [--params JSON] [--bundle]` ships today. In `rc >= 1.22.0`, use
-`rc project chat doctor [--origin URL] [--principal-kind KIND] [--bundle]` for chat diagnostics.
+`rc project chat doctor [--origin URL] [--principal-kind KIND] [--since 30m|1h|24h] [--bundle]` for chat diagnostics.
 
 ## ACTION_CLOCK_SKEW_INVALID
 
@@ -317,9 +317,9 @@ bundle.
 
 ## BAD_PRINCIPAL
 
-- **Meaning:** Chat token minting received only part of a principal identity.
+- **Meaning:** Principal resolution or chat token minting received an incomplete or contradictory identity.
 - **Who fixes:** you.
-- **Self-fix:** Supply both `principal_kind` and `external_id`, or omit both.
+- **Self-fix:** For resolution, supply a declared kind and exactly one email/external ID. For token minting, supply both principal kind and external ID, or omit both.
 - **Escalate with:** The error line and a redacted request shape; never send an external id.
 
 ## BAD_SIGNATURE
@@ -660,10 +660,24 @@ bundle.
 
 ## PRINCIPAL_LOOKUP_FAILED
 
-- **Meaning:** The session opened, but the identity check could not run: the principal manifest's verify query was rejected by your own database.
+- **Meaning:** The host-side email lookup or run-time principal verification could not execute against your database.
 - **Who fixes:** you.
-- **Self-fix:** Make `external_id` match the type the verify SQL parameter expects (an email sent where the query binds a UUID is the usual cause), or widen the manifest query to accept the identifier you mint.
+- **Self-fix:** Check the manifest query, provisioning DSN, parameter types, and database reachability. For run-time verification, ensure the external ID has the type the verify query expects.
 - **Escalate with:** The error line, the principal kind, the session id, and `rc project chat doctor --bundle`.
+
+## PRINCIPAL_LOOKUP_NOT_CONFIGURED
+
+- **Meaning:** Email resolution was requested but the project's principal manifest has no `email_lookup`.
+- **Who fixes:** operator.
+- **Self-fix:** Add and validate an exact-email `email_lookup`, or use `--external-id` when the authenticated backend already has the canonical ID.
+- **Escalate with:** The error line, project slug, and public principal kind; never send the email or external ID.
+
+## PRINCIPAL_NOT_FOUND
+
+- **Meaning:** The email lookup returned zero or multiple rows, so ReplyPen refused to choose an identity.
+- **Who fixes:** you or operator.
+- **Self-fix:** Confirm the authenticated email exists uniquely in your data and that the lookup matches normalized email exactly; do not fall back to an unscoped token.
+- **Escalate with:** The error line, project slug, and public principal kind; never send the email, external ID, or matched rows.
 
 ## PRINCIPAL_REQUIRED
 
@@ -807,7 +821,7 @@ bundle.
 
 ## TENANT_NOT_SUPPORTED
 
-- **Meaning:** The token carries a tenant for a project that has no tenants.
+- **Meaning:** A token or principal-resolution request carries a tenant for a project that has no tenants.
 - **Who fixes:** you.
 - **Self-fix:** Omit the `tenant` claim for this project and mint a fresh token.
 - **Escalate with:** The error line and `rc project chat doctor --bundle` if the operator says the project is tenant-enabled.
@@ -902,6 +916,13 @@ bundle.
 - **Who fixes:** you or operator.
 - **Self-fix:** Use a declared kind exactly, or add the intended kind to the validated manifest.
 - **Escalate with:** The error line, public kind name, and `rc project chat doctor --bundle`.
+
+## UNKNOWN_TENANT
+
+- **Meaning:** Principal resolution named a tenant that is absent or inactive for this project.
+- **Who fixes:** you or operator.
+- **Self-fix:** Use the exact active tenant slug returned by ReplyPen; never fall back to project-wide resolution.
+- **Escalate with:** The error line, project slug, and redacted tenant slug.
 
 ## UNKNOWN_PROJECT
 
