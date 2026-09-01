@@ -19,7 +19,7 @@ Signing, freshness, the error table and the result envelope are in [`../CONTRACT
 
 Conventional mount: `/rootcause/action`. Result route: `/rootcause/result` (see
 [`analysis.md`](analysis.md)). The `405 + Allow: POST` answer is the **liveness floor** every
-Embassy must keep — `/rc-action-doctor` probes it to prove a mount exists without side effects.
+Embassy must keep — the host-side probe uses it to prove a mount exists without side effects.
 
 ## 1. Invocation — host → Embassy (POST, signed)
 

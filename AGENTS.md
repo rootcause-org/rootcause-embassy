@@ -1,4 +1,4 @@
-# AGENTS.md — the orchestration playbook
+# AGENTS.md — maintainers-only orchestration playbook
 
 This repo is the **hub**. Its whole point is that a contract change happens **once here** and then
 fans out to every implementation, provably.

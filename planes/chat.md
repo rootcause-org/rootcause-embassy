@@ -27,7 +27,7 @@ over the **exact transmitted segments** — never a re-encode.
   "iat": 1781913600,
   "nbf": 1781913600,
   "exp": 1781920800,
-  "principal": {"kind":"kampadmin_admin","external_id":"<external_id>",
+  "principal": {"kind":"acme_user","external_id":"<external_id>",
                 "asserted_by":"<project>","assurance":"customer_backend_jwt"},
   "tenant": "acme",
   "locale": "nl",

@@ -165,8 +165,8 @@ GET {mount}/health   (signed)
 
 An **unsigned** request gets **404** — no existence leak to an unauthenticated prober.
 
-The `405 + Allow: POST` probe at the mount stays the **floor** for older Embassies; operator tooling
-(`/rc-action-doctor`) upgrades to `/health` opportunistically and falls back.
+The `405 + Allow: POST` probe at the mount stays the **floor** for older Embassies; the host-side
+probe upgrades to `/health` opportunistically and falls back.
 
 **`protocol: 1` is the versioning story.** Bump only on a breaking change. Additive fields stay
 non-breaking because the action/result direction decodes tolerantly (§5). No negotiation, no version
