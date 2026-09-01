@@ -644,12 +644,26 @@ bundle.
 - **Self-fix:** If user scoping is required, install a validated principal manifest before enabling the integration.
 - **Escalate with:** `rc project chat doctor --bundle` and the intended public kind names only.
 
+## PRINCIPAL_LOOKUP_FAILED
+
+- **Meaning:** The session opened, but the identity check could not run: the principal manifest's verify query was rejected by your own database.
+- **Who fixes:** you.
+- **Self-fix:** Make `external_id` match the type the verify SQL parameter expects (an email sent where the query binds a UUID is the usual cause), or widen the manifest query to accept the identifier you mint.
+- **Escalate with:** The error line, the principal kind, the session id, and `rc project chat doctor --bundle`.
+
 ## PRINCIPAL_REQUIRED
 
 - **Meaning:** The project declares principal kinds but the token has no complete valid principal.
 - **Who fixes:** you.
 - **Self-fix:** Mint `principal.kind`, `external_id`, `asserted_by`, and `assurance` from the authenticated backend.
 - **Escalate with:** The error line, redacted claim names, and `rc project chat doctor --bundle`.
+
+## PRINCIPAL_UNVERIFIED
+
+- **Meaning:** The session opened, but no record matched the asserted principal, so the turn was refused rather than answered at a wider scope.
+- **Who fixes:** you.
+- **Self-fix:** Mint the token with an `external_id` that exists for that kind in your own data, and confirm the manifest's verify query matches exactly one row for it.
+- **Escalate with:** The error line, the principal kind, the session id, and `rc project chat doctor --bundle`.
 
 ## PREVIEW_PRINCIPAL_INVALID
 
