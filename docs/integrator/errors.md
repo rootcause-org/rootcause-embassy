@@ -527,10 +527,10 @@ bundle.
 
 ## FORBIDDEN
 
-- **Meaning:** The authenticated `rc` identity lacks the project role, tenant reach, or scope required for this action operation.
+- **Meaning:** The authenticated `rc` identity lacks the project role, tenant reach, or scope required for this operation. Principal-manifest reads, edits and identity resolution additionally require project-admin authority, not just the scope.
 - **Who fixes:** you.
-- **Self-fix:** Run `rc auth access`, select the intended project/tenant, and ask a project admin for the missing action permission.
-- **Escalate with:** The error line and `rc dev action doctor <action-id> --bundle`.
+- **Self-fix:** Run `rc auth access`, select the intended project/tenant, and ask a project admin for the missing permission.
+- **Escalate with:** The error line, the command you ran, and `rc dev action doctor <action-id> --bundle` for an action.
 
 ## HANDLER_ERROR
 
@@ -828,9 +828,9 @@ bundle.
 
 ## TENANT_REQUIRED
 
-- **Meaning:** A tenant-enabled chat token or action request omits the required tenant slug.
+- **Meaning:** A tenant-enabled chat token, identity resolution, or action request omits the required tenant slug.
 - **Who fixes:** you.
-- **Self-fix:** Resolve the authenticated app context to the registered tenant slug; mint a fresh chat token or pass the action's trusted tenant selector outside params.
+- **Self-fix:** Resolve the authenticated app context to the registered tenant slug; select it before resolving an identity, mint a fresh chat token, or pass the action's trusted tenant selector outside params.
 - **Escalate with:** For actions, the error line and `rc dev action doctor <action-id> --bundle`; for chat, the error line, redacted tenant slug, and `rc project chat doctor --bundle`.
 
 ## TENANT_UNAVAILABLE
