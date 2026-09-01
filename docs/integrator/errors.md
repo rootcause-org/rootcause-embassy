@@ -693,6 +693,13 @@ bundle.
 - **Self-fix:** Correct the field shown by Studio; origins must be exact `scheme://host[:port]`, colors must be hex, and prompts must stay within the displayed limits.
 - **Escalate with:** The error line and redacted setting names; never send secrets or personal data.
 
+## PREVIEW_SETTINGS_SCOPE
+
+- **Meaning:** A tenant Chat Studio route received project-wide settings it does not own.
+- **Who fixes:** you.
+- **Self-fix:** Change enablement, origins, branding, greeting, prompts, and locale/scheme on the project Chat Studio route; a tenant route saves only that tenant's chat depth.
+- **Escalate with:** The error line and tenant slug only.
+
 ## PREVIEW_TENANT_REQUIRED
 
 - **Meaning:** Chat Studio or the implementation brief needs a tenant-bound scope for this project.
