@@ -79,6 +79,9 @@ Ruby:
 
 ## Principal on invocations
 
-Invocations will gain an optional `principal` object. Decode action input tolerantly and ignore an
-unknown additive field. Until the field is present, derive no identity from params or model output.
-When it arrives, trust it only after the invocation signature verifies.
+Invocations may carry an optional host-stamped `principal` object with `kind`, `external_id`, and typed
+`claims`. Embassy implementations expose it only for the duration of the action as
+`RC_PRINCIPAL_KIND`, `RC_PRINCIPAL_EXTERNAL_ID`, and `RC_PRINCIPAL_CLAIM_<NAME>` (arrays are compact
+JSON). Decode the field tolerantly and keep accepting its absence. Never accept principal selectors in
+action params or inherited `RC_PRINCIPAL_*` process env. Trust the principal only after the invocation
+signature verifies.

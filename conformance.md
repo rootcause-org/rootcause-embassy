@@ -21,6 +21,9 @@ implementation's status in [`languages.md`](languages.md), never copy it.
   signed over the raw query.
 - Dry run == `result_dry_run.json` with `duration_ms` normalized; the signed fetch **is** performed;
   no runner needed.
+- `invocation_principal.json` decodes the trusted principal identity + typed claims and exposes them
+  only for the action invocation; the principal-less fixtures remain accepted and expose no stale
+  `RC_PRINCIPAL_*` values.
 - Success envelope key order == `result_ok.json`.
 - Refusal fixtures define the required minimum fields and values for
   `result_refusal_{bad_signature,replay,schema_violation,resolve_failed}.json`. An emitted refusal may
@@ -29,7 +32,8 @@ implementation's status in [`languages.md`](languages.md), never copy it.
 - Class-only refusals: unsigned/mis-signed fetch response → 502; unimplemented `runtime` → 400
   (the hub fixtures say `ruby`, so every non-Ruby port refuses them); omitted `runtime` is accepted;
   non-boolean `dry_run` → 400 **before** any fetch; stale `issued_at` → 409; reserved `rc_tenant_*`
-  / `tenant_*` names in params **or** schema → 422; partial tuple → 400; body over the inbound cap →
+  / `tenant_*` / `rc_principal_*` / principal-selector names in params **or** schema → 422; partial
+  tenant or principal context → 400; body over the inbound cap →
   400; runner exception → signed `200`, `ok:false`, implementation-defined class (decision 6e).
 - Tenant-context policy: with strict tenant context enabled, an absent tuple is accepted only when
   the signed `action_id` is explicitly allowlisted; a non-allowlisted flat invocation refuses; a

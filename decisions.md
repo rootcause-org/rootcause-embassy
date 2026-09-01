@@ -277,6 +277,27 @@ No fixture change: the existing refusal bodies remain valid minimum messages.
 
 ---
 
+## 16. Action invocations carry optional host-resolved principal context
+
+Requester-confirmable actions must bind writes below tenant scope without trusting model-authored
+params. The signed action invocation therefore gains an optional `principal` object: non-empty `kind`
+and `external_id`, plus host-resolved typed `claims`. Absence remains valid for reviewer/admin and flat
+actions, so the field is additive under protocol 1.
+
+The host is the sole source: it resolves the principal before the action plane, fills any
+manifest-declared claim-bound params, and signs the resulting invocation. Embassy implementations
+validate the shape only after signature verification and expose the context for that invocation. They
+delete inherited `RC_PRINCIPAL_*` first; subprocess ports use `RC_PRINCIPAL_KIND`,
+`RC_PRINCIPAL_EXTERNAL_ID`, and `RC_PRINCIPAL_CLAIM_<NAME>`, while an in-process port may pass an
+equivalent frozen typed argument. Principal selectors and `rc_principal_*` are reserved param/schema
+names, just as tenant selectors already are.
+
+This does not let an Embassy independently re-resolve claims or infer identity from params. The signed
+host assertion is the trust transfer; the digest-pinned action remains responsible for using it to
+scope the write.
+
+---
+
 ## Fixture reconciliation notes
 
 The pre-hub goldens existed in two divergent copies. Resolved as follows:
@@ -293,5 +314,5 @@ The pre-hub goldens existed in two divergent copies. Resolved as follows:
 
 ## Known gaps (host-tracked, deliberately NOT in this contract)
 
-Embassy attachments over the action plane · Embassy mid-loop autonomy · a customer-held approval
-factor · MCP-per-end-user. Do not invent wire shapes for these in a language repo.
+Embassy attachments over the action plane · a customer-held approval factor · MCP-per-end-user. Do not
+invent wire shapes for these in a language repo.

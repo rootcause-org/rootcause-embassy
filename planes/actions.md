@@ -25,6 +25,7 @@ Embassy must keep — the host-side probe uses it to prove a mount exists withou
 
 Golden: [`fixtures/actions/invocation_flat.json`](../fixtures/actions/invocation_flat.json),
 [`invocation_tenant.json`](../fixtures/actions/invocation_tenant.json),
+[`invocation_principal.json`](../fixtures/actions/invocation_principal.json),
 [`invocation_dry_run.json`](../fixtures/actions/invocation_dry_run.json).
 
 ```json
@@ -37,6 +38,11 @@ Golden: [`fixtures/actions/invocation_flat.json`](../fixtures/actions/invocation
   "tenant_id": "<uuid>",
   "tenant_slug": "<route/display key>",
   "tenant_scope_value": "<customer data key>",
+  "principal": {
+    "kind": "acme_user",
+    "external_id": "user-8f3",
+    "claims": {"user_id": "user-8f3", "person_id": 103, "backup_ids": ["backup-7"]}
+  },
   "nonce": "<str>",
   "issued_at": "<RFC3339 UTC>",
   "dry_run": true,
@@ -54,6 +60,11 @@ Golden: [`fixtures/actions/invocation_flat.json`](../fixtures/actions/invocation
   nothing else in the invocation is trusted until the raw-body HMAC passes.
 - **`dry_run` is emitted iff true.** An executing invocation's bytes are byte-identical to the
   pre-dry_run contract.
+- **`principal` is optional.** When present, it is resolved and stamped by the host, never copied from
+  action params or model output. `kind` and `external_id` are non-empty strings. `claims` is an object
+  whose names match `[a-z][a-z0-9_]*` and whose values are strings, integers, or homogeneous arrays of
+  those types. A malformed or partial principal refuses as `400 invalid_request`. Receivers MUST keep
+  accepting invocations with no principal.
 - **`runtime`** is `ruby` | `go` | `python` ([decision 8](../decisions.md#8-runtime-tokens)). An
   Embassy hard-refuses a runtime it does not implement: `400 invalid_request`.
 
@@ -64,8 +75,9 @@ Golden: [`fixtures/actions/invocation_flat.json`](../fixtures/actions/invocation
   `tenant_scope_value` may be absent or empty (credential/id/slug-scoped tenants).
 - A **partial** tuple is a refusal.
 - **Reserved names** — `tenant_id`, `tenant_slug`, `tenant_scope_value` and any `rc_tenant_*`
-  spelling are rejected **in both `params` and `schema`**. Params select an in-tenant target, never
-  the tenant itself.
+  spelling, plus `principal_kind`, `principal_external_id` and any `rc_principal_*` spelling, are
+  rejected **in both `params` and `schema`**. Params select an in-scope target; they never assert the
+  tenant or principal.
 - A tenant-enabled deployment sets `require_tenant_context = true`: a validly signed **absent** tuple
   refuses before script resolution unless its signed `action_id` is in the deployment's explicit
   `tenantless_actions` allowlist. This narrow exception lets a shared, flat project use selected
@@ -77,6 +89,19 @@ Golden: [`fixtures/actions/invocation_flat.json`](../fixtures/actions/invocation
   `RC_TENANT_SLUG`, `RC_TENANT_SCOPE_VALUE` **env** is the convention for subprocess and hosted
   execution; an in-process Embassy may instead pass a trusted typed argument. No env-bound field may
   contain NUL.
+
+### Principal context
+
+- **Exposure is trusted and invocation-scoped.** Subprocess implementations delete every inherited
+  `RC_PRINCIPAL_*` variable, then set `RC_PRINCIPAL_KIND`, `RC_PRINCIPAL_EXTERNAL_ID`, and one
+  `RC_PRINCIPAL_CLAIM_<UPPER_NAME>` per claim. Scalar values use their plain string/base-10 form;
+  arrays use compact JSON. An in-process Embassy may instead pass the same values as a frozen typed
+  argument. No principal-bound field may contain NUL.
+- The principal context exists only while the action runs and is cleared/restored afterwards. A
+  principal-less invocation runs with every `RC_PRINCIPAL_*` variable absent, so stale process env
+  cannot impersonate a prior requester.
+- `dry_run: true` validates principal shape and reserved names but starts no action script. The same
+  principal is present on a later real execution only because the host signs it again.
 
 ## 2. Script fetch — Embassy → host (GET, signed)
 
