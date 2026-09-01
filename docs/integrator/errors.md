@@ -60,6 +60,13 @@ bundle.
 - **Self-fix:** Set `ROOTCAUSE_FETCH_URL` to the host-provided HTTPS endpoint and restart the app.
 - **Escalate with:** The error line, Embassy version, and redacted action configuration.
 
+## ACTION_NOT_FOUND
+
+- **Meaning:** The requested chat action does not exist or is no longer available.
+- **Who fixes:** operator.
+- **Self-fix:** Refresh the chat session and do not retry a stale action id.
+- **Escalate with:** The error line and `rc project chat doctor --bundle`.
+
 ## ACTION_PLANE_DISABLED
 
 - **Meaning:** An action or result route was called while the Embassy action plane is disabled.
@@ -101,6 +108,13 @@ bundle.
 - **Who fixes:** you.
 - **Self-fix:** Set a positive timeout no greater than the action deadline, then restart the app.
 - **Escalate with:** The error line, Embassy version, and redacted duration settings.
+
+## ACTION_UNAVAILABLE
+
+- **Meaning:** The action exists but cannot currently accept this decision.
+- **Who fixes:** operator.
+- **Self-fix:** Refresh the action card and avoid repeating the decision while its state is uncertain.
+- **Escalate with:** The error line and `rc project chat doctor --bundle`.
 
 ## ACTIONS_DISABLED
 
@@ -270,12 +284,26 @@ bundle.
 - **Self-fix:** Use the id returned by the preceding ReplyPen response without truncation or decoration.
 - **Escalate with:** The error line and `rc project chat doctor --bundle` if the returned id itself is rejected.
 
+## BAD_LIMIT
+
+- **Meaning:** A diagnostics request used an invalid recent-reject limit.
+- **Who fixes:** you.
+- **Self-fix:** Use an integer from 1 through 1000.
+- **Escalate with:** The error line and the command used, without credentials.
+
 ## BAD_OUTCOME
 
 - **Meaning:** An action decision is not `confirm`, `decline`, or `cancel`.
 - **Who fixes:** you.
 - **Self-fix:** Send one allowed lowercase outcome in `{"outcome":"..."}`.
 - **Escalate with:** The error line and a redacted request shape plus `rc project chat doctor --bundle`.
+
+## BAD_PRINCIPAL
+
+- **Meaning:** Chat token minting received only part of a principal identity.
+- **Who fixes:** you.
+- **Self-fix:** Supply both `principal_kind` and `external_id`, or omit both.
+- **Escalate with:** The error line and a redacted request shape; never send an external id.
 
 ## BAD_SIGNATURE
 
@@ -291,6 +319,13 @@ bundle.
 - **Self-fix:** Replay `fixtures/chat/jwt_vector.json`, check the backend clock, and compare `aud`, `iss`, `origin`, and expiry.
 - **Escalate with:** The error line and `rc project chat doctor --bundle`; never paste the token.
 
+## BRANDING_UNAVAILABLE
+
+- **Meaning:** Chat doctor could not read the project's public branding state.
+- **Who fixes:** operator.
+- **Self-fix:** Verify API reachability and that the CLI is scoped to the intended project.
+- **Escalate with:** `rc project chat doctor --bundle`.
+
 ## CHAT_BASE_URL_INVALID
 
 - **Meaning:** The configured chat base URL is malformed or unsafe.
@@ -304,6 +339,13 @@ bundle.
 - **Who fixes:** operator.
 - **Self-fix:** Confirm the intended project slug, then ask the operator to enable chat for it.
 - **Escalate with:** The error line and `rc project chat doctor --bundle`.
+
+## CHAT_DOCTOR_FAILED
+
+- **Meaning:** One or more required embedded-chat checks failed.
+- **Who fixes:** you or operator, as named by the individual finding.
+- **Self-fix:** Resolve each failed finding, then rerun chat doctor.
+- **Escalate with:** `rc project chat doctor --bundle`.
 
 ## CHAT_EXTERNAL_ID_REQUIRED
 
@@ -319,6 +361,20 @@ bundle.
 - **Self-fix:** Set `ROOTCAUSE_CHAT_PROJECT` to the operator-provided slug and restart the app.
 - **Escalate with:** The error line and redacted chat configuration.
 
+## CHAT_SECRET_FALLBACK
+
+- **Meaning:** Chat still signs tokens with the legacy webhook secret.
+- **Who fixes:** operator.
+- **Self-fix:** Rotate a dedicated chat signing secret, then update the server-side minter.
+- **Escalate with:** `rc project chat doctor --bundle`; never send either secret.
+
+## CHAT_SECRET_MISSING
+
+- **Meaning:** No dedicated chat signing secret exists to reveal.
+- **Who fixes:** operator.
+- **Self-fix:** Run `rc project chat secret rotate` and capture its one-time output safely.
+- **Escalate with:** `rc project chat doctor --bundle`; never send the generated secret.
+
 ## CHAT_SECRET_REQUIRED
 
 - **Meaning:** Chat token minting was attempted without a signing secret.
@@ -332,6 +388,13 @@ bundle.
 - **Who fixes:** you.
 - **Self-fix:** Provision distinct random secrets for the chat and action planes, then restart the app.
 - **Escalate with:** The error line and only secret fingerprints from an approved doctor command.
+
+## CHAT_SECRET_UNAVAILABLE
+
+- **Meaning:** ReplyPen could not create or decrypt the dedicated chat signing secret.
+- **Who fixes:** operator.
+- **Self-fix:** Stop rotating or minting tokens and ask the operator to verify host secret storage.
+- **Escalate with:** The error line and `rc project chat doctor --bundle`; never send secret material.
 
 ## EMBASSY_HEALTH_INVALID
 
@@ -466,6 +529,13 @@ bundle.
 - **Self-fix:** Read the safe host hint, verify the request contract, and do not infer success.
 - **Escalate with:** The error line, HTTP status, request path, and redacted response shape.
 
+## HOST_REQUEST_REJECTED
+
+- **Meaning:** The widget received a non-success host response without a structured public error.
+- **Who fixes:** operator.
+- **Self-fix:** Retry once after confirming ReplyPen is reachable; do not loop on the rejected request.
+- **Escalate with:** The browser error line and `rc project chat doctor --bundle`.
+
 ## INTERNAL
 
 - **Meaning:** The chat host could not complete a request for a reason the integrator cannot repair from the request.
@@ -486,6 +556,13 @@ bundle.
 - **Who fixes:** you.
 - **Self-fix:** Compare the submitted names and JSON types with the action's public schema; never add tenant selectors as params.
 - **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+
+## INVALID_PRINCIPALS
+
+- **Meaning:** The submitted principal manifest is malformed or violates its fail-closed validation rules.
+- **Who fixes:** operator.
+- **Self-fix:** Correct the manifest kinds, claims, placeholders, and lookup definition, then submit the whole document again.
+- **Escalate with:** The error line and a redacted manifest shape; omit SQL and identifiers.
 
 ## INVALID_REQUEST
 
@@ -508,12 +585,26 @@ bundle.
 - **Self-fix:** Send exactly one file part named `file` plus the `session_id` field.
 - **Escalate with:** The error line and a redacted multipart field-name list plus `rc project chat doctor --bundle`.
 
+## NETWORK_ERROR
+
+- **Meaning:** The widget or CLI could not reach ReplyPen over the network.
+- **Who fixes:** you or operator.
+- **Self-fix:** Check connectivity, DNS, TLS, CSP, and the configured ReplyPen origin before retrying.
+- **Escalate with:** The error line, UTC timestamp, and `rc project chat doctor --bundle`.
+
 ## NO_TOKEN
 
 - **Meaning:** The chat request has no usable `Authorization: Bearer <token>` header.
 - **Who fixes:** you.
 - **Self-fix:** Fetch a fresh token from your backend and attach it as a Bearer token; do not place it in the URL.
 - **Escalate with:** The error line and `rc project chat doctor --bundle`; never paste the token.
+
+## OK
+
+- **Meaning:** A chat-doctor check passed.
+- **Who fixes:** nobody.
+- **Self-fix:** No action is required for this finding.
+- **Escalate with:** Nothing unless another finding failed or warned.
 
 ## ORIGIN_INVALID
 
@@ -535,6 +626,20 @@ bundle.
 - **Who fixes:** operator.
 - **Self-fix:** Verify the page origin has no path/trailing slash, then request that exact origin be registered.
 - **Escalate with:** The error line, exact origin, and `rc project chat doctor --bundle`.
+
+## PANEL_ERROR
+
+- **Meaning:** The embedded panel could not complete a widget request.
+- **Who fixes:** you or operator.
+- **Self-fix:** Reload once, then inspect the accompanying public code and hint.
+- **Escalate with:** The browser error line and `rc project chat doctor --bundle`.
+
+## PRINCIPALS_DORMANT
+
+- **Meaning:** Chat is enabled without declared principal kinds, so sessions are not user-scoped.
+- **Who fixes:** operator.
+- **Self-fix:** If user scoping is required, install a validated principal manifest before enabling the integration.
+- **Escalate with:** `rc project chat doctor --bundle` and the intended public kind names only.
 
 ## PRINCIPAL_REQUIRED
 
@@ -627,6 +732,13 @@ bundle.
 - **Self-fix:** Preserve and pass the ReplyPen session id without accepting a browser-forged replacement.
 - **Escalate with:** The error line and redacted request flow.
 
+## SESSION_NOT_FOUND
+
+- **Meaning:** The requested chat session does not exist or is not reachable by this token.
+- **Who fixes:** you.
+- **Self-fix:** Use the session id returned by the open call, or open a fresh session.
+- **Escalate with:** The error line and `rc project chat doctor --bundle`.
+
 ## TENANT_NOT_SUPPORTED
 
 - **Meaning:** The token carries a tenant for a project that has no tenants.
@@ -717,6 +829,13 @@ bundle.
 - **Who fixes:** you.
 - **Self-fix:** Use the upload response id in the same session and do not reuse ids across sessions.
 - **Escalate with:** The error line, session/attachment ids, and `rc project chat doctor --bundle`.
+
+## UNKNOWN_PRINCIPAL_KIND
+
+- **Meaning:** Token minting requested a principal kind absent from the project's manifest.
+- **Who fixes:** you or operator.
+- **Self-fix:** Use a declared kind exactly, or add the intended kind to the validated manifest.
+- **Escalate with:** The error line, public kind name, and `rc project chat doctor --bundle`.
 
 ## UNKNOWN_PROJECT
 
