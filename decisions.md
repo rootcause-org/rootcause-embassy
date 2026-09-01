@@ -260,6 +260,23 @@ Rollout is ordered: hosts emit `project_id` on callbacks before an Embassy deplo
 
 ---
 
+## 15. Integrator diagnostics are additive to wire refusal classes
+
+Action/result refusals keep the closed snake_case `class` vocabulary from decision 6. Their required
+wire minimum remains `{"ok":false,"error":{"class":…,"message":…}}`; a port may add
+`error.code`, `error.hint`, and `error.docs` so the same signed response is directly actionable for an
+integrator. `code` is stable SCREAMING_SNAKE, `hint` is one customer-safe sentence, and `docs` points
+to that code in the public error catalogue.
+
+These fields are additive under protocol 1 and do not authorize a new wire `class`. The sender signs
+the exact bytes it emits and the receiver verifies those bytes before reading any diagnostic. Refusal
+fixtures therefore pin the required minimum fields and their canonical signatures; conformance
+compares those fields as a subset when a port emits the additive diagnostics.
+
+No fixture change: the existing refusal bodies remain valid minimum messages.
+
+---
+
 ## Fixture reconciliation notes
 
 The pre-hub goldens existed in two divergent copies. Resolved as follows:

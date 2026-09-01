@@ -6,8 +6,8 @@ them from another port's tests (Go omitted the API plane; a port copying Go inhe
 
 Precedence when sources disagree: **fixtures (bytes) > `CONTRACT.md` / `planes/` / `decisions.md`
 (prose) > a reference implementation (Ruby, Go, Python)**. A reference implementation is a hint;
-where it deviates from prose it is the one out of conformance — record it under "Open conformance
-debt" in [`languages.md`](languages.md), never copy it.
+where it deviates from prose it is the one out of conformance — record the gap in that
+implementation's status in [`languages.md`](languages.md), never copy it.
 
 ## Signing
 - Every `signing_vectors.json.bodies` entry: file length == `body_bytes`, sha256 == `body_sha256`,
@@ -22,7 +22,10 @@ debt" in [`languages.md`](languages.md), never copy it.
 - Dry run == `result_dry_run.json` with `duration_ms` normalized; the signed fetch **is** performed;
   no runner needed.
 - Success envelope key order == `result_ok.json`.
-- Refusals byte-exact vs `result_refusal_{bad_signature,replay,schema_violation,resolve_failed}.json`.
+- Refusal fixtures define the required minimum fields and values for
+  `result_refusal_{bad_signature,replay,schema_violation,resolve_failed}.json`. An emitted refusal may
+  add `error.code`, `error.hint`, and `error.docs`; verify its signature over the actual emitted bytes
+  and compare the fixture fields as a subset rather than requiring byte equality.
 - Class-only refusals: unsigned/mis-signed fetch response → 502; unimplemented `runtime` → 400
   (the hub fixtures say `ruby`, so every non-Ruby port refuses them); omitted `runtime` is accepted;
   non-boolean `dry_run` → 400 **before** any fetch; stale `issued_at` → 409; reserved `rc_tenant_*`
