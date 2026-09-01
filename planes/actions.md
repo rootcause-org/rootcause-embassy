@@ -70,6 +70,10 @@ Golden: [`fixtures/actions/invocation_flat.json`](../fixtures/actions/invocation
 
 ### Tenant tuple
 
+**Write-plane stance:** ReplyPen installs no RLS on customer tables. Tenant scope is host-stamped and
+tenant-selection params are rejected; every deterministic, human-vetted, digest-pinned action must
+scope each query with that binding. Project rule `actions-only-host-stamped-env` backs up review.
+
 - **All-or-nothing.** A flat project omits all three fields entirely (preserving its existing signed
   bytes). A tenant-bound invocation carries a non-empty `tenant_id` **and** `tenant_slug`;
   `tenant_scope_value` may be absent or empty (credential/id/slug-scoped tenants).
