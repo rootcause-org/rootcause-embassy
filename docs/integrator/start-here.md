@@ -100,20 +100,23 @@ below. Ask the operator if the project or a required permission is absent.
 - [ ] [`errors.md`](errors.md): every surfaced code has been followed to its self-fix steps.
 - [ ] [`escalate.md`](escalate.md): redacted bundle captured if the operator must help.
 
-## Upcoming self-service commands
+## Self-service commands (`rc >= 1.22.0`)
 
-These command shapes require `rc >= X` (version TBD). Until that release lands, the operator performs
-the equivalent configuration:
+Use an authenticated, project-scoped `rc` profile (or add `--project <slug>` to each command):
 
 ```sh
 rc project chat get
-rc project chat set
+rc project chat set chat_enabled=true chat_origins=https://app.acme.example
 rc project chat secret rotate
 rc project chat secret reveal
-rc project chat doctor
+rc project chat token --origin https://app.acme.example \
+  --principal-kind acme_user --principal-id <external-id> [--tenant <tenant-slug>]
+rc project chat send <message> [--token <token>] [--origin https://app.acme.example]
+rc project chat doctor [--origin https://app.acme.example] \
+  [--principal-kind acme_user] [--bundle]
 rc project principals get
-rc project principals set
+rc project principals set <json-or-yaml-file>
 ```
 
-Do not design scripts around the placeholder version. Confirm availability with `rc help` and
-`rc --version`.
+`chat secret rotate` and `chat secret reveal` print plaintext once; redirect them only to an approved
+secret channel. `chat send` reads `RC_CHAT_TOKEN` when `--token` is omitted.

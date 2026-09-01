@@ -3,15 +3,14 @@
 Run the doctor first when stuck:
 
 ```sh
-rc project chat doctor
+rc project chat doctor [--origin https://app.acme.example] [--principal-kind acme_user]
 rc dev action doctor <action-id>
 ```
 
-`rc dev action doctor <action-id>` ships today; `rc project chat doctor` does not yet — check
-`rc help`. Every chat rung below is runnable without it. Use `--bundle` only for escalation, because
-its output is shaped for sharing. Rungs 1–2 are fully local. Rungs 3–6 require the operator to have
-supplied the secret and confirmed project, origins, principal kinds, and tenants. Complete each rung
-in order; a higher rung does not replace a lower one.
+Chat doctor requires `rc >= 1.22.0`. Use `--bundle` only for escalation, because its output is shaped
+for sharing. Rungs 1–2 are fully local. Rungs 3–6 require the operator to have supplied the secret and
+confirmed project, origins, principal kinds, and tenants. Complete each rung in order; a higher rung
+does not replace a lower one.
 
 ## Chat
 

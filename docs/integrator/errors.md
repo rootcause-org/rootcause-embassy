@@ -11,9 +11,8 @@ The widget writes `console.error("[ReplyPen] <CODE>: <hint> — <docs>")`. Never
 secrets, personal data, private host details, provider names, costs, or stack traces in an error or
 bundle.
 
-`rc dev action doctor <action-id> [--params JSON] [--bundle]` ships today. `rc project chat doctor`
-does not yet — confirm with `rc help`; until it lands, use the manual chat bundle in
-[`escalate.md`](escalate.md).
+`rc dev action doctor <action-id> [--params JSON] [--bundle]` ships today. In `rc >= 1.22.0`, use
+`rc project chat doctor [--origin URL] [--principal-kind KIND] [--bundle]` for chat diagnostics.
 
 ## ACTION_CLOCK_SKEW_INVALID
 
