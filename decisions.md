@@ -281,7 +281,8 @@ No fixture change: the existing refusal bodies remain valid minimum messages.
 
 Requester-confirmable actions must bind writes below tenant scope without trusting model-authored
 params. The signed action invocation therefore gains an optional `principal` object: non-empty `kind`
-and `external_id`, plus host-resolved typed `claims`. Absence remains valid for reviewer/admin and flat
+and `external_id`, plus host-resolved typed `claims`. `claims` is always an object and may be empty;
+identity still exists when no action parameter binds a derived claim. Absence remains valid for reviewer/admin and flat
 actions, so the field is additive under protocol 1.
 
 The host is the sole source: it resolves the principal before the action plane, fills any
@@ -289,7 +290,7 @@ manifest-declared claim-bound params, and signs the resulting invocation. Embass
 validate the shape only after signature verification and expose the context for that invocation. They
 delete inherited `RC_PRINCIPAL_*` first; subprocess ports use `RC_PRINCIPAL_KIND`,
 `RC_PRINCIPAL_EXTERNAL_ID`, and `RC_PRINCIPAL_CLAIM_<NAME>`, while an in-process port may pass an
-equivalent frozen typed argument. Principal selectors and `rc_principal_*` are reserved param/schema
+equivalent frozen typed argument. Principal selectors, `principal_claim_*`, and `rc_principal_*` are reserved param/schema
 names, just as tenant selectors already are.
 
 This does not let an Embassy independently re-resolve claims or infer identity from params. The signed

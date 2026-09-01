@@ -80,8 +80,8 @@ Ruby:
 ## Principal on invocations
 
 Invocations may carry an optional host-stamped `principal` object with `kind`, `external_id`, and typed
-`claims`. Embassy implementations expose it only for the duration of the action as
+`claims` (always an object, possibly empty). Embassy implementations expose it only for the duration of the action as
 `RC_PRINCIPAL_KIND`, `RC_PRINCIPAL_EXTERNAL_ID`, and `RC_PRINCIPAL_CLAIM_<NAME>` (arrays are compact
-JSON). Decode the field tolerantly and keep accepting its absence. Never accept principal selectors in
-action params or inherited `RC_PRINCIPAL_*` process env. Trust the principal only after the invocation
+JSON). Decode the field tolerantly and keep accepting its absence. Never accept principal selectors or
+`principal_claim_*` in action params, nor inherited `RC_PRINCIPAL_*` process env. Trust the principal only after the invocation
 signature verifies.

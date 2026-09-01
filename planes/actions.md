@@ -61,8 +61,8 @@ Golden: [`fixtures/actions/invocation_flat.json`](../fixtures/actions/invocation
 - **`dry_run` is emitted iff true.** An executing invocation's bytes are byte-identical to the
   pre-dry_run contract.
 - **`principal` is optional.** When present, it is resolved and stamped by the host, never copied from
-  action params or model output. `kind` and `external_id` are non-empty strings. `claims` is an object
-  whose names match `[a-z][a-z0-9_]*` and whose values are strings, integers, or homogeneous arrays of
+  action params or model output. `kind` and `external_id` are non-empty strings. `claims` is always an
+  object and may be empty; its names match `[a-z][a-z0-9_]*` and its values are strings, integers, or homogeneous arrays of
   those types. A malformed or partial principal refuses as `400 invalid_request`. Receivers MUST keep
   accepting invocations with no principal.
 - **`runtime`** is `ruby` | `go` | `python` ([decision 8](../decisions.md#8-runtime-tokens)). An
@@ -79,7 +79,8 @@ scope each query with that binding. Project rule `actions-only-host-stamped-env`
   `tenant_scope_value` may be absent or empty (credential/id/slug-scoped tenants).
 - A **partial** tuple is a refusal.
 - **Reserved names** — `tenant_id`, `tenant_slug`, `tenant_scope_value` and any `rc_tenant_*`
-  spelling, plus `principal_kind`, `principal_external_id` and any `rc_principal_*` spelling, are
+  spelling, plus `principal_kind`, `principal_external_id`, any `principal_claim_*`, and any
+  `rc_principal_*` spelling, are
   rejected **in both `params` and `schema`**. Params select an in-scope target; they never assert the
   tenant or principal.
 - A tenant-enabled deployment sets `require_tenant_context = true`: a validly signed **absent** tuple
