@@ -7,7 +7,7 @@ rc project chat doctor
 rc dev action doctor
 ```
 
-These shapes require `rc >= X` (version TBD). Use `--bundle` only for escalation because its output is
+Neither command is in `rc` yet (check `rc help`); every rung below is runnable without them. Use `--bundle` only for escalation because its output is
 designed for sharing. Rungs 1–2 are fully local. Rungs 3–6 require the operator to have supplied the
 secret and confirmed project, origins, principal kinds, and tenants; the doctor command is not a
 prerequisite until its stated `rc` version lands. Complete each rung in order; a higher rung does not
@@ -33,7 +33,10 @@ replace a lower one.
 
    Expect: loader `?v=2`, project, token, and optional attributes are escaped correctly.
 
-   On failure: [`WIDGET_LOADER_NOT_FOUND`](errors.md#widget_loader_not_found).
+   On failure: this is a local assertion, not a host code — fix the tag against the golden. A wrong
+   loader URL surfaces later as [`WIDGET_LOADER_NOT_FOUND`](errors.md#widget_loader_not_found), a
+   bad mode/target as [`WIDGET_MODE_INVALID`](errors.md#widget_mode_invalid) /
+   [`WIDGET_TARGET_INVALID`](errors.md#widget_target_invalid).
 
 3. Open a session
 
@@ -89,10 +92,20 @@ replace a lower one.
 
 7. Probes and dry run
 
-   Command: run `rc dev action doctor`, including the 405 mount probe, signed health, and dry-run
-   fixture replay.
+   Command: `rc dev action doctor` once it ships. Until then, run the three probes yourself:
 
-   Expect: mount present, signed protocol `1` health, and `would_execute: true` with no data change.
+   ```sh
+   curl -i -X GET <mount>                                    # 1. mount exists
+   sig=$(printf 'project_id=<uuid>' | openssl dgst -sha256 -hmac "$ROOTCAUSE_ACTION_SECRET" -r | cut -d' ' -f1)
+   curl -i "<mount>/health?project_id=<uuid>" -H "X-Webhook-Signature: $sig"   # 2. signed health
+   ```
+
+   Then 3: ask the operator to replay an approved action with `dry_run: true`, or POST a signed
+   invocation built from [`../../fixtures/actions/invocation_dry_run.json`](../../fixtures/actions/invocation_dry_run.json).
+
+   Expect: `405` with `Allow: POST`; then signed protocol `1` health with the Embassy version and
+   capability tokens; then `would_execute: true` with no data change. An unsigned health request
+   returns an opaque `404` by design.
 
    On failure: use the returned refusal, commonly [`BAD_SIGNATURE`](errors.md#bad_signature),
    [`RESOLVE_FAILED`](errors.md#resolve_failed), or [`SCHEMA_VIOLATION`](errors.md#schema_violation).

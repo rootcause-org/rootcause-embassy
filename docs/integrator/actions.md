@@ -48,7 +48,8 @@ Start troubleshooting with:
 rc dev action doctor
 ```
 
-The command requires `rc >= X` (version TBD). Until then, ask the operator to run the host-side probe.
+That command is not in `rc` yet; run the three probes yourself as shown in
+[`verify.md`](verify.md) rung 7, or ask the operator to run the host-side probe.
 
 ## Script rules by runtime
 

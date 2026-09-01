@@ -70,7 +70,7 @@ project.
 ### GET (script fetch)
 
 A GET has no body: the signature covers the **raw query string**. See
-[`planes/actions.md`](planes/actions.md#2-script-fetch).
+[`planes/actions.md`](planes/actions.md#2-script-fetch--embassy--host-get-signed).
 
 ## Error vocabulary
 

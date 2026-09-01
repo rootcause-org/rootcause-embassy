@@ -283,7 +283,7 @@ The pre-hub goldens existed in two divergent copies. Resolved as follows:
 
 | Aspect | Winner | Why |
 |---|---|---|
-| Envelope shape + field order | host (`internal/action/testdata/contract/`) | the host marshals the signed bytes |
+| Envelope shape + field order | host (its private conformance fixtures) | the host marshals the signed bytes |
 | Error `class` vocabulary | gem (snake_case) | language-neutral (§6) |
 | `script_digest` value | gem (`sha256:3932d2ca…`) | it is the **real** sha256 of the fixture script; the host's `sha256:abc123` is a placeholder no Embassy could digest-verify |
 | `project_id` | host (`11111111-…`) | the gem used the nil UUID, which several code paths treat as absent |

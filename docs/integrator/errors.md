@@ -11,6 +11,10 @@ The widget writes `console.error("[ReplyPen] <CODE>: <hint> — <docs>")`. Never
 secrets, personal data, private host details, provider names, costs, or stack traces in an error or
 bundle.
 
+`rc project chat doctor` and `rc dev action doctor` are **not in `rc` yet**; every "Escalate with"
+below names them as the eventual one-command bundle. Confirm with `rc help` — until they ship, follow
+the manual bundle in [`escalate.md`](escalate.md) and escalate with that instead.
+
 ## ACTION_CLOCK_SKEW_INVALID
 
 - **Meaning:** The configured action clock-skew allowance is outside the safe range.
@@ -37,21 +41,21 @@ bundle.
 - **Meaning:** The approved action script could not complete successfully.
 - **Who fixes:** you.
 - **Self-fix:** Inspect the safe execution result, fix the app dependency or handler, and do not retry while the outcome is uncertain.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## ACTION_EXECUTOR_UNAVAILABLE
 
 - **Meaning:** ReplyPen cannot start action execution because the action executor is not available.
 - **Who fixes:** operator.
 - **Self-fix:** Stop before confirmation and ask the operator to verify the project's action execution service.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## ACTION_FAILED
 
 - **Meaning:** The action ran or attempted to run but finished with a failed outcome.
 - **Who fixes:** you.
 - **Self-fix:** Inspect the action's customer-safe result, fix the script or app dependency, and do not retry while the outcome is uncertain.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## ACTION_FETCH_URL_REQUIRED
 
@@ -86,7 +90,7 @@ bundle.
 - **Meaning:** ReplyPen could not resolve the approved action definition and pinned script digest.
 - **Who fixes:** operator.
 - **Self-fix:** Confirm the action id is approved and live in the project brain; do not substitute an unapproved script.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## ACTION_SECRET_REQUIRED
 
@@ -121,7 +125,7 @@ bundle.
 - **Meaning:** The project action plane is disabled.
 - **Who fixes:** operator.
 - **Self-fix:** Keep proposals non-actionable and ask the operator to enable actions with the intended autonomy cap.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## ACTIONS_UNAVAILABLE
 
@@ -401,98 +405,98 @@ bundle.
 - **Meaning:** The Embassy health response is missing required fields, malformed, unsigned, or signed incorrectly.
 - **Who fixes:** you.
 - **Self-fix:** Upgrade the Embassy, verify its signed `/health` route and protocol fields, and replay the health fixture.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## EMBASSY_MODE_REQUIRED
 
 - **Meaning:** Action execution needs an Embassy mode, but the project has no usable mode configured.
 - **Who fixes:** operator.
 - **Self-fix:** Ask the operator to select the intended Embassy execution mode before testing a real action.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## EMBASSY_NOT_MOUNTED
 
 - **Meaning:** The configured app URL responds, but no Embassy action route is mounted there.
 - **Who fixes:** you.
 - **Self-fix:** Mount the language Embassy at the registered path and verify the unsigned 405 liveness floor.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## EMBASSY_PROTOCOL_MISMATCH
 
 - **Meaning:** The mounted Embassy reports a protocol version incompatible with the host.
 - **Who fixes:** you.
 - **Self-fix:** Upgrade the Embassy to a compatible release; never bypass protocol or signature checks.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## EMBASSY_REJECTED
 
 - **Meaning:** The Embassy returned a signed refusal that does not map to a more specific public code.
 - **Who fixes:** you.
 - **Self-fix:** Read the verified refusal class and hint, then follow its catalogue entry without weakening the gate.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## EMBASSY_REPLAYED
 
 - **Meaning:** The Embassy rejected the invocation as stale or replayed.
 - **Who fixes:** you.
 - **Self-fix:** Synchronize the app clock, use a fresh nonce per invocation, and do not retry a possibly executed action blindly.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## EMBASSY_RESOLVE_FAILED
 
 - **Meaning:** The Embassy could not fetch or digest-verify the approved action script.
 - **Who fixes:** operator.
 - **Self-fix:** Verify signed script-fetch reachability and approval state; never run bytes whose digest does not match.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## EMBASSY_RESULT_INVALID
 
 - **Meaning:** The Embassy response is malformed, oversized, unsigned, or fails signature verification.
 - **Who fixes:** you.
 - **Self-fix:** Upgrade the Embassy and replay the signed result fixtures over the exact transmitted bytes.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## EMBASSY_SCHEMA_REJECTED
 
 - **Meaning:** The Embassy refused action params because they do not satisfy the approved schema.
 - **Who fixes:** you.
 - **Self-fix:** Match param keys and types to the approved manifest and remove reserved tenant selectors.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## EMBASSY_SIGNATURE_REJECTED
 
 - **Meaning:** The Embassy could not verify the host invocation signature with its configured action secret.
 - **Who fixes:** operator.
 - **Self-fix:** Verify the app and host hold the same per-project action reverse secret; never paste either secret into diagnostics.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## EMBASSY_TLS
 
 - **Meaning:** ReplyPen could not establish a trusted TLS connection to the Embassy URL.
 - **Who fixes:** you.
 - **Self-fix:** Install a publicly trusted, hostname-matching certificate with a complete chain and current validity.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## EMBASSY_UNREACHABLE
 
 - **Meaning:** ReplyPen could not connect to the Embassy or the request timed out before a response.
 - **Who fixes:** you.
 - **Self-fix:** Check public DNS, firewall/allowlist, route availability, and the Embassy's total request deadline.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## EMBASSY_URL_MISSING
 
 - **Meaning:** The project has no Embassy action URL configured.
 - **Who fixes:** operator.
 - **Self-fix:** Provide the operator with the public HTTPS mount URL and confirm it contains no credentials or query string.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## EMBASSY_URL_REFUSED
 
 - **Meaning:** The configured Embassy URL violates the host's outbound URL safety rules.
 - **Who fixes:** operator.
 - **Self-fix:** Use a public HTTPS hostname that resolves to the intended app; loopback, private, credentialed, or unsafe redirect targets are refused.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## EMPTY_FILE
 
@@ -513,7 +517,7 @@ bundle.
 - **Meaning:** The authenticated `rc` identity lacks the project role, tenant reach, or scope required for this action operation.
 - **Who fixes:** you.
 - **Self-fix:** Run `rc auth access`, select the intended project/tenant, and ask a project admin for the missing action permission.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## HANDLER_ERROR
 
@@ -555,7 +559,7 @@ bundle.
 - **Meaning:** The requested action params are malformed, missing, extra, or incompatible with the approved manifest.
 - **Who fixes:** you.
 - **Self-fix:** Compare the submitted names and JSON types with the action's public schema; never add tenant selectors as params.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## INVALID_PRINCIPALS
 
@@ -751,7 +755,7 @@ bundle.
 - **Meaning:** A tenant-enabled chat token or action request omits the required tenant slug.
 - **Who fixes:** you.
 - **Self-fix:** Resolve the authenticated app context to the registered tenant slug; mint a fresh chat token or pass the action's trusted tenant selector outside params.
-- **Escalate with:** For actions, the error line and `rc dev action doctor ACTION_ID --bundle`; for chat, the error line, redacted tenant slug, and `rc project chat doctor --bundle`.
+- **Escalate with:** For actions, the error line and `rc dev action doctor --bundle`; for chat, the error line, redacted tenant slug, and `rc project chat doctor --bundle`.
 
 ## TENANT_UNAVAILABLE
 
@@ -821,7 +825,7 @@ bundle.
 - **Meaning:** The action id is absent from the project's approved live registry.
 - **Who fixes:** you.
 - **Self-fix:** Use the exact approved action id or complete the draft → review → approve lifecycle before invoking it.
-- **Escalate with:** The error line and `rc dev action doctor ACTION_ID --bundle`.
+- **Escalate with:** The error line and `rc dev action doctor --bundle`.
 
 ## UNKNOWN_ATTACHMENT
 
