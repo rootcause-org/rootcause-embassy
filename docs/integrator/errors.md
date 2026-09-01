@@ -105,6 +105,20 @@ bundle.
 - **Self-fix:** Remove blank entries and provide one non-empty secret for every configured project.
 - **Escalate with:** The error line and only redacted map keys; never send secret values.
 
+## ACTION_TENANT_CONTEXT_INVALID
+
+- **Meaning:** The Ruby Embassy tenant-context requirement is not a boolean.
+- **Who fixes:** you.
+- **Self-fix:** Set `require_tenant_context` to `true` or `false`, then restart the app.
+- **Escalate with:** The error line, Embassy version, and redacted action configuration.
+
+## ACTION_TENANTLESS_ACTIONS_INVALID
+
+- **Meaning:** The Ruby Embassy tenantless action allowlist contains blank, duplicate, or non-string ids.
+- **Who fixes:** you.
+- **Self-fix:** Use unique non-empty action ids, or leave `tenantless_actions` empty.
+- **Escalate with:** The error line, Embassy version, and redacted action configuration.
+
 ## ACTION_TIMEOUT_INVALID
 
 - **Meaning:** The configured action execution timeout is outside the safe range.
@@ -926,9 +940,9 @@ bundle.
 
 ## WIDGET_MODE_INVALID
 
-- **Meaning:** The Go widget helper received a mode other than empty or `page`.
+- **Meaning:** An Embassy widget helper received a mode other than empty, `bubble`, or `page`.
 - **Who fixes:** you.
-- **Self-fix:** Use `page` for an embedded surface or leave mode empty for the floating widget.
+- **Self-fix:** Use `page` for an embedded surface, `bubble` for the explicit floating mode, or leave mode empty.
 - **Escalate with:** The error line, Embassy version, and redacted widget configuration.
 
 ## WIDGET_PANEL_NOT_FOUND
@@ -947,7 +961,7 @@ bundle.
 
 ## WIDGET_TARGET_INVALID
 
-- **Meaning:** The Go widget helper received page mode without a target, or a target outside page mode.
+- **Meaning:** An Embassy widget helper received page mode without a target, or a target outside page mode.
 - **Who fixes:** you.
 - **Self-fix:** Set one non-empty CSS selector only when mode is `page`; omit target for the floating widget.
 - **Escalate with:** The error line, Embassy version, and redacted widget configuration.
