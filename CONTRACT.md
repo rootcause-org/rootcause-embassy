@@ -127,7 +127,8 @@ direction is tolerant. There is no version negotiation and no version header.
    proposal the customer app **renders** for a human to click; the click goes to the host, which then
    invokes the Embassy over the action plane. An `executed_actions[]` entry already ran host-side —
    render it as an **outcome**, never as a confirm button. Mid-loop autonomy is host-gated policy and
-   never a decision an Embassy makes.
+   never a decision an Embassy makes. A host-gated policy/auto invocation arrives on the same signed
+   action route as a human-confirmed invocation and the Embassy executes it identically.
 2. **A principal never originates from model output.** A principal is asserted by the customer's own
    authenticated backend (chat JWT) or stamped by trusted server-side code (analysis trigger). Nothing
    an LLM emitted may become one. Likewise the tenant tuple: the host stamps it outside model-authored
