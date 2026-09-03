@@ -299,6 +299,29 @@ scope the write.
 
 ---
 
+## 17. Proposed actions may carry a render-only `resource_url`
+
+A reviewer confirming an action cannot see *which* record it will touch. The confirm `url` is the
+host's single-use, expiring, digest-pinned target — following it is the decision, not the inspection.
+So `actions[]` gains an optional `resource_url`: an absolute `http(s)` link into the integrator's own
+admin UI for the record the action would modify.
+
+The host is the only source. It is resolved deterministically per invocation (the action's own
+pre-execution resolution already knows the record), never written by a model and never derived by an
+Embassy from `params`. It is **render-only**: show it as a secondary link beside the confirm button;
+never wire a confirm, a POST, or an auto-execute to it. `executed_actions[]` does not carry it — an
+outcome is not a proposal.
+
+Absent when the action has no single record, so the field is additive under protocol 1 — no bump, and
+tolerant-inbound decoding means every existing port keeps passing on the new fixture without a change.
+A value that is not `http(s)` is dropped silently rather than refusing the callback: the analysis
+result is the valuable payload and a bad decoration must not cost the reviewer the draft.
+
+Fixture: [`analysis/result_callback.json`](fixtures/analysis/result_callback.json) carries it on its
+single proposed action; its signing vector was regenerated.
+
+---
+
 ## Fixture reconciliation notes
 
 The pre-hub goldens existed in two divergent copies. Resolved as follows:

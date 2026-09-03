@@ -51,7 +51,8 @@ implementation's status in [`languages.md`](languages.md), never copy it.
 
 ## Result route
 - `result_callback.json` decodes into the port's types: `analysis_id`, `session_id`, draft
-  (markdown-first), `project_id`, `notes[].key == "summary"`, `actions[].slug`, `executed_actions[]`,
+  (markdown-first), `project_id`, `notes[].key == "summary"`, `actions[].slug`,
+  `actions[].resource_url` (optional, render-only — never a confirm target), `executed_actions[]`,
   `questions[]`, `delete[]`, `metadata`.
 - Ack bytes == `result_ack.json`.
 - Redelivery: 3 deliveries → 1 dispatch; a failed dispatch releases the nonce (2nd delivery

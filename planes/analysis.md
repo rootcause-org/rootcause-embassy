@@ -79,7 +79,8 @@ Golden: [`result_callback.json`](../fixtures/analysis/result_callback.json).
   "project_id": "<uuid>",
   "draft": {"subject":"…","body_markdown":"…","body_html":"…"},
   "notes": [{"key":"summary","body_markdown":"…"}],
-  "actions": [{"id":"…","slug":"…","label":"…","description":"…","url":"…","color":"#RRGGBB"}],
+  "actions": [{"id":"…","slug":"…","label":"…","description":"…","url":"…","color":"#RRGGBB",
+              "resource_url":"https://admin.acme.com/…"}],
   "executed_actions": [{"id":"…","slug":"…","label":"…","ok":true,"summary":"…"}],
   "delete": ["<id>"],
   "decline": {"reason":"…"},
@@ -113,6 +114,12 @@ payload; missing, malformed or unknown ids refuse as opaque `401 bad_signature`.
 - **`actions[]` are proposals** carrying `slug` (the registry action id) alongside `id` (the confirm
   target). Render as buttons pointing at the host's single-use, expiring, digest-pinned confirm URL.
   **Never auto-execute.**
+- **`actions[].resource_url` is render-only, never a confirm target**
+  ([decision 17](../decisions.md#17-proposed-actions-may-carry-a-render-only-resource_url)). It is an
+  absolute `http(s)` link to the record the action would modify, in the integrator's **own** admin UI,
+  so a reviewer can inspect before confirming. Render it as a secondary link **next to** the confirm
+  button — never as the button itself. Omitted when the action has no single record; drop a
+  non-`http(s)` value silently rather than refusing the callback.
 - **`executed_actions[]` already ran** mid-loop. Render as an **outcome**, never a confirm button.
 - **`questions[]`** are clarifying questions. Render them in your own UI and POST the answers back
   over the sent-message route (§3) with the same `session_id`.
