@@ -86,6 +86,13 @@ Any customer-facing change to a plane also updates the matching `docs/integrator
 affected section of `docs/integrator/errors.md`. A public API change without integrator guidance is
 incomplete.
 
+## Checks
+
+`scripts/check.sh` (bash + python3, no dependencies) is the hub's own mechanical gate, run on every
+push and pull request by `.github/workflows/check.yml`: fixture trailing-newline rules, every signing
+vector recomputed from the file bytes, no section cross-references, every relative link and `#anchor`
+resolves, and a decision count in `README.md` that matches `decisions.md`. Run it before you commit.
+
 ## Style
 
 Plain language, terse, high-signal — read by agents and humans. Lead with the delta. No changelog
