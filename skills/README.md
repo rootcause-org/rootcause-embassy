@@ -11,5 +11,5 @@ For ReplyPen actions, read ../rootcause-embassy/skills/embassy-actions/SKILL.md.
 For language code and framework mounting, read ../rootcause-embassy-<language>/README.md.
 ```
 
-3. Keep both clones on reviewed tagged versions. Do not copy the skill prose into the app; one linked
+3. Keep both clones pinned to a reviewed commit. Do not copy the skill prose into the app; one linked
    source avoids drift.

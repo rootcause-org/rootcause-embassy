@@ -72,7 +72,7 @@ does not replace a lower one.
 
 5. Prove replay protection
 
-   Command: repeat rung 3 with the exact same token.
+   Command: repeat rung 4 with the exact same token.
 
    Expect: `401 TOKEN_REPLAYED`.
 
@@ -134,7 +134,7 @@ does not replace a lower one.
    ```sh
    curl -i -X GET <mount>                                     # expect 405 + Allow: POST
    sig=$(printf 'project_id=<uuid>' | openssl dgst -sha256 -hmac "$ROOTCAUSE_ACTION_SECRET" -r | cut -d' ' -f1)
-   curl -i "<mount>/health?project_id=<uuid>" -H "X-Webhook-Signature: $sig"
+   curl -i "<mount>/health?project_id=<uuid>" -H "X-Webhook-Signature: sha256=$sig"
    ```
 
    An unsigned health request returns an opaque `404` by design.

@@ -545,6 +545,7 @@ bundle.
 - **Who fixes:** operator.
 - **Self-fix:** Read the safe host hint, verify the request contract, and do not infer success.
 - **Escalate with:** The error line, HTTP status, request path, and redacted response shape.
+- **Emitted by:** the Go Embassy's API-plane client only, today.
 
 ## HOST_REQUEST_REJECTED
 
@@ -569,10 +570,8 @@ bundle.
 
 ## INVALID_PARAMS
 
-- **Meaning:** The requested action params are malformed, missing, extra, or incompatible with the approved manifest.
-- **Who fixes:** you.
-- **Self-fix:** Compare the submitted names and JSON types with the action's public schema; never add tenant selectors as params.
-- **Escalate with:** The error line and `rc dev action doctor <action-id> --bundle`.
+Not emitted. Param-validation refusals surface as [`SCHEMA_VIOLATION`](#schema_violation); the anchor
+stays so existing links keep resolving.
 
 ## INVALID_PRINCIPALS
 
@@ -917,13 +916,6 @@ bundle.
 - **Self-fix:** Use a declared kind exactly, or add the intended kind to the validated manifest.
 - **Escalate with:** The error line, public kind name, and `rc project chat doctor --bundle`.
 
-## UNKNOWN_TENANT
-
-- **Meaning:** Principal resolution named a tenant that is absent or inactive for this project.
-- **Who fixes:** you or operator.
-- **Self-fix:** Use the exact active tenant slug returned by ReplyPen; never fall back to project-wide resolution.
-- **Escalate with:** The error line, project slug, and redacted tenant slug.
-
 ## UNKNOWN_PROJECT
 
 - **Meaning:** The project query parameter is missing or does not name a visible ReplyPen project.
@@ -947,10 +939,13 @@ bundle.
 
 ## UNKNOWN_TENANT
 
-- **Meaning:** The token names a tenant slug not registered under the project.
-- **Who fixes:** you.
-- **Self-fix:** Map authenticated app context to the operator-provided slug; do not derive it from free-form browser input.
-- **Escalate with:** The error line, tenant slug, and `rc project chat doctor --bundle`.
+- **Meaning:** A tenant slug is absent or inactive for this project. Two surfaces raise it: principal
+  resolution naming such a tenant, and a token whose tenant claim is not registered under the project.
+- **Who fixes:** you or operator.
+- **Self-fix:** Use the exact active tenant slug ReplyPen returns; map authenticated app context to
+  the operator-provided slug, never free-form browser input, and never fall back to project-wide
+  resolution.
+- **Escalate with:** The error line, project slug, redacted tenant slug, and `rc project chat doctor --bundle`.
 
 ## UNSUPPORTED_TYPE
 
