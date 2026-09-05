@@ -41,7 +41,7 @@ Goldens: [`trigger.json`](../fixtures/analysis/trigger.json),
 
 - `body` is **required**, plain text only. `subject` optional.
 - `metadata` is **free-form** here (scalars, small, no secrets/PII — it transits rootcause and comes
-  back verbatim). Unlike sent-message metadata, which is fixed (§3).
+  back verbatim). Unlike sent-message metadata, which is fixed by the sent-message capture route below.
 - `session_id` optional; omit on turn 1. An **unknown** id is treated as fresh, so a caller may choose
   its own from turn 1. Max 200 chars.
 - `principal` is optional ([decision 4](../decisions.md#4-analysis-trigger-carries-a-principal)). If
@@ -122,7 +122,7 @@ payload; missing, malformed or unknown ids refuse as opaque `401 bad_signature`.
   non-`http(s)` value silently rather than refusing the callback.
 - **`executed_actions[]` already ran** mid-loop. Render as an **outcome**, never a confirm button.
 - **`questions[]`** are clarifying questions. Render them in your own UI and POST the answers back
-  over the sent-message route (§3) with the same `session_id`.
+  over the sent-message capture route with the same `session_id`.
 - **`delete[]`** lists previously delivered artifacts to retract.
 - **`decline`** is mutually exclusive with a draft/notes/delete outcome.
 - **`reasoning_steps` does not exist** ([decision 2](../decisions.md#2-reasoning_steps-is-dead)).

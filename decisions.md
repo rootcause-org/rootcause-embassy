@@ -76,7 +76,7 @@ host-side on this route — the signed channel owns its own trust semantics.
 The **general rule**: **trigger-direction routes (`/analyses/*`) are STRICT** — unknown field = `400`;
 **action/result direction is tolerant-inbound** — ignore what you do not know. That asymmetry is
 deliberate: we want our own callers' drift to be loud, and we want additive host changes to be
-non-breaking for deployed Embassies. It is also the entire versioning story (see §10).
+non-breaking for deployed Embassies. It is also the entire versioning story (see [decision 10](#10-health-endpoint)).
 
 Note the trigger's own `metadata` **is** free-form — only the sent-message one is fixed.
 
@@ -169,7 +169,7 @@ The `405 + Allow: POST` probe at the mount stays the **floor** for older Embassi
 probe upgrades to `/health` opportunistically and falls back.
 
 **`protocol: 1` is the versioning story.** Bump only on a breaking change. Additive fields stay
-non-breaking because the action/result direction decodes tolerantly (§5). No negotiation, no version
+non-breaking because the action/result direction decodes tolerantly ([decision 5](#5-sent-message-metadata-is-fixed)). No negotiation, no version
 header.
 
 ---
@@ -329,7 +329,7 @@ The pre-hub goldens existed in two divergent copies. Resolved as follows:
 | Aspect | Winner | Why |
 |---|---|---|
 | Envelope shape + field order | host (its private conformance fixtures) | the host marshals the signed bytes |
-| Error `class` vocabulary | gem (snake_case) | language-neutral (§6) |
+| Error `class` vocabulary | gem (snake_case) | language-neutral ([decision 6](#6-error-vocabulary-refusal-envelope-note-key)) |
 | `script_digest` value | gem (`sha256:3932d2ca…`) | it is the **real** sha256 of the fixture script; the host's `sha256:abc123` is a placeholder no Embassy could digest-verify |
 | `project_id` | host (`11111111-…`) | the gem used the nil UUID, which several code paths treat as absent |
 | Param/script sample values | gem (`x@acme.com`) | more realistic; values are not contract |

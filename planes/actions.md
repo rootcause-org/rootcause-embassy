@@ -14,7 +14,7 @@ Signing, freshness, the error table and the result envelope are in [`../CONTRACT
 | Method | Path | Purpose |
 |---|---|---|
 | POST | `{mount}` | invocation |
-| GET | `{mount}/health` | signed liveness + capabilities (optional, see §5) |
+| GET | `{mount}/health` | signed liveness + capabilities (optional, see [Health endpoint](#5-health-endpoint)) |
 | any other | `{mount}` | `405` + `Allow: POST` |
 
 Conventional mount: `/rootcause/action`. Result route: `/rootcause/result` (see

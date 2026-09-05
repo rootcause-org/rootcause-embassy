@@ -7,9 +7,9 @@ row.
 |---|---|---|---|---|
 | `rootcause` | **host** — the other side of every plane | live | — | private conformance fixtures |
 | `rootcause-embassy-ruby` | Ruby Embassy (Rails/Rack), gem `rootcause-embassy` | main has action/analysis/chat/API parity + typed diagnostics; gem release pending a documented flow | `ruby` (in-process eval) | `spec/fixtures/contract/` |
-| `rootcause-embassy-go` | Go Embassy, module `github.com/rootcause-org/rootcause-embassy-go` | live, 0.2.0 | `go` (yaegi) | `internal/contract/testdata/` |
+| `rootcause-embassy-go` | Go Embassy, module `github.com/rootcause-org/rootcause-embassy-go` | live, 0.3.1 | `go` (yaegi) | `internal/contract/testdata/` |
 | PHP | Laravel/Symfony Embassy | planned | `php` | — |
-| `rootcause-embassy-python` | Python Embassy (Litestar/FastAPI/Django), package `rootcause_embassy`, `github.com/rootcause-org/rootcause-embassy-python` | live, 0.1.0 | `python` (via registered runner, decision 12) | `tests/contract/testdata/` |
+| `rootcause-embassy-python` | Python Embassy (Litestar/FastAPI/Django), package `rootcause_embassy`, `github.com/rootcause-org/rootcause-embassy-python` | live, 0.2.0 — vendored fixtures behind the hub | `python` (via registered runner, decision 12) | `tests/contract/testdata/` |
 | Node | Express/Nest Embassy | planned | `node` | — |
 
 ## Per-plane coverage
@@ -18,12 +18,14 @@ row.
 |---|---|---|---|---|---|---|---|---|---|
 | host | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | verify only | ✅ | — |
 | ruby | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| go | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| go | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ ¹ | ✅ |
 | python | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+¹ Go implements the API plane; its API-plane conformance cases are not ported yet.
 
 ## Adding a language
 
-1. Add the row above and its runtime token to [`decisions.md`](decisions.md) §8.
+1. Add the row above and its runtime token to [decision 8](decisions.md#8-runtime-tokens).
 2. Vendor `fixtures/` + the hub SHA.
 3. Implement, in this order: signing → replay → schema → resolve → execute → result envelope →
    analysis planes → chat mint → api plane → health.
