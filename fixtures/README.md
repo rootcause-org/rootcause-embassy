@@ -37,6 +37,7 @@ can genuinely exercise the digest-verification path with `fetch_response.json`.
 ```
 signing_vectors.json                    every HMAC vector + the script-fetch query vector
 actions/
+  surfaces.json                         brain-facing posture vocabulary + deprecated aliases (not wire)
   invocation_flat.json                  no tenant tuple, no dry_run (dry_run emitted iff true)
   invocation_tenant.json                full tenant tuple
   invocation_principal.json             tenant tuple + host-stamped principal and typed claims

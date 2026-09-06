@@ -7,6 +7,15 @@ runs it on the project's own production, and returns a signed structured result.
 Digest pinning is the authorization unit: a leaked reverse secret can only trigger an
 **already-approved version**, never arbitrary new code.
 
+## Brain-facing surface posture
+
+An action manifest may restrict eligibility with `surfaces:`. The host uses the same closed values
+for the prompt's `Request source:` label; the canonical vocabulary and deprecated aliases live in
+[`../fixtures/actions/surfaces.json`](../fixtures/actions/surfaces.json). `email` covers Gmail,
+Outlook, IMAP and future mailbox transports. Provider identity remains telemetry, is not a manifest
+policy key, and does not cross this wire. Omission means all canonical surfaces; an unknown value
+fails closed.
+
 Signing, freshness, the error table and the result envelope are in [`../CONTRACT.md`](../CONTRACT.md).
 
 ## Routes

@@ -322,6 +322,20 @@ single proposed action; its signing vector was regenerated.
 
 ---
 
+## 18. `email` is a posture, transport is telemetry
+
+The brain-facing action `surfaces:` allowlist and prompt `Request source:` label use `email` for every
+mailbox ingress. Gmail, Outlook and IMAP identify transport, not audience or authorization posture;
+they remain available in host metadata, telemetry and traces but are not canonical brain keys.
+
+Existing manifests may still declare `gmail`, `outlook` or `imap`. The host and brain lint accept
+those deprecated aliases, warn, and normalize them to `email` before eligibility checks. New
+manifests use only the canonical vocabulary in [`fixtures/actions/surfaces.json`](fixtures/actions/surfaces.json).
+Unknown values still fail closed. The vocabulary is host/brain contract data and never crosses the
+Embassy wire, so protocol 1 is unchanged and no signing vector applies.
+
+---
+
 ## Fixture reconciliation notes
 
 The pre-hub goldens existed in two divergent copies. Resolved as follows:

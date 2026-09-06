@@ -13,6 +13,12 @@ ambiguities live in [`decisions.md`](decisions.md).
 | **chat** | customer backend → browser → host | HS256 JWT, `webhook_secret` | [`planes/chat.md`](planes/chat.md) |
 | **api** | Embassy → host | OAuth bearer, `api_key` | [`planes/api.md`](planes/api.md) |
 
+Action manifests and the prompt's `Request source:` label share the provider-neutral vocabulary in
+[`fixtures/actions/surfaces.json`](fixtures/actions/surfaces.json). `email` covers every mailbox
+transport; Gmail, Outlook and IMAP remain host telemetry and never become brain-facing policy keys.
+This posture vocabulary does not cross the Embassy wire
+([decision 18](decisions.md#18-email-is-a-posture-transport-is-telemetry)).
+
 ## Three keys, no fallback, ever
 
 | Key | Used for | Held by |
