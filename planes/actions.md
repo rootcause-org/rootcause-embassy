@@ -149,6 +149,7 @@ X-Webhook-Signature: sha256=<hex over the RAW query string>
 
 Goldens: [`result_ok.json`](../fixtures/actions/result_ok.json),
 [`result_dry_run.json`](../fixtures/actions/result_dry_run.json),
+[`result_action_error.json`](../fixtures/actions/result_action_error.json),
 `result_refusal_{bad_signature,replay,schema_violation,resolve_failed}.json`.
 
 See [`../CONTRACT.md`](../CONTRACT.md#result-envelope) for the envelope and the refusal rule.

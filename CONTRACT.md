@@ -101,6 +101,8 @@ catalogued in [`docs/integrator/errors.md`](docs/integrator/errors.md).
 ```
 
 `error` is `null` on success, else `{"class":"<snake_case>","message":"<str>","backtrace":"<str>?"}`.
+`backtrace` is a **single string** (frames joined with `\n`), never an array — a JSON array there is a
+port bug the host cannot decode. Golden: [`result_action_error.json`](fixtures/actions/result_action_error.json).
 
 - **Every** outcome is signed, **including non-2xx refusals**, except a map-mode request whose missing,
   malformed or unknown `project_id` prevents secret selection. A refusal is a non-2xx status **and** a

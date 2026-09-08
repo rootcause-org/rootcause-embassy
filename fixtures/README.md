@@ -47,6 +47,7 @@ actions/
   fetch_response.json                   signed script-by-digest response
   result_ok.json                        success envelope
   result_dry_run.json                   {"dry_run":true,"would_execute":true}
+  result_action_error.json              script raised: signed 200, ok:false, backtrace STRING
   result_refusal_bad_signature.json     401
   result_refusal_replay.json            409
   result_refusal_schema_violation.json  422
