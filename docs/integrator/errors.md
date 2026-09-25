@@ -958,7 +958,7 @@ stays so existing links keep resolving.
 
 - **Meaning:** The browser received `404` for `/chat/widget/v1/loader.js`.
 - **Who fixes:** you.
-- **Self-fix:** Use `https://app.replypen.com/chat/widget/v1/loader.js?v=2` exactly and remove proxy path rewriting.
+- **Self-fix:** Use `https://app.replypen.com/chat/widget/v1/loader.js?v=3` exactly and remove proxy path rewriting.
 - **Escalate with:** The console error, requested URL without token/query data, and `rc project chat doctor --bundle`.
 
 ## WIDGET_MODE_INVALID

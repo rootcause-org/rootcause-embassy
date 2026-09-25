@@ -69,7 +69,7 @@ over the **exact transmitted segments** — never a re-encode.
 ## Widget tag
 
 ```html
-<script src="{chat_base_url}/chat/widget/v1/loader.js?v=2"
+<script src="{chat_base_url}/chat/widget/v1/loader.js?v=3"
         data-rc-project="<project>"
         data-rc-token="<token>"
         data-rc-mode="page"
@@ -78,7 +78,7 @@ over the **exact transmitted segments** — never a re-encode.
         data-rc-color-scheme="light"></script>
 ```
 
-- Loader path `/chat/widget/v1/loader.js`; **loader contract revision `?v=2`**. The host
+- Loader path `/chat/widget/v1/loader.js`; **loader contract revision `?v=3`**. The host
   immutable-caches that asset, so the revision MUST be bumped whenever a generated attribute starts
   requiring new loader behavior — otherwise an already-open browser pairs a new tag with stale
   JavaScript.

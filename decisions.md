@@ -336,6 +336,18 @@ Embassy wire, so protocol 1 is unchanged and no signing vector applies.
 
 ---
 
+## 19. Loader contract revision is `?v=3`
+
+The hosted loader gained the recorder permission delegation (`microphone`, `display-capture`) and its
+immutable cache key moved from `?v=2` to `?v=3`. The host's `rc project chat brief` emitted `?v=3`
+before this hub did, so the Go, Ruby and Python widget tags and every integrator doc paired the
+brief's Permissions-Policy guidance with a loader that could not act on it. The revision lives in
+exactly one golden, [`fixtures/chat/widget_tag.html`](fixtures/chat/widget_tag.html); a host bump
+lands here first and fans out, never the other way round. Tokens and `/chat/v1/*` are unchanged, so
+no signing vector applies.
+
+---
+
 ## Fixture reconciliation notes
 
 The pre-hub goldens existed in two divergent copies. Resolved as follows:

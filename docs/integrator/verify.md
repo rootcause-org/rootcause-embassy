@@ -27,10 +27,10 @@ does not replace a lower one.
 
    Command: for a server-rendered integration, render the widget tag in a unit test and compare it
    with `fixtures/chat/widget_tag.html` after substituting only documented inputs. For an SPA that
-   constructs the tag in browser code, assert the loader path, `?v=2`, all required attributes, and
+   constructs the tag in browser code, assert the loader path, `?v=3`, all required attributes, and
    that each optional attribute appears only when configured.
 
-   Expect: loader `?v=2`, project, token, and optional attributes are escaped correctly.
+   Expect: loader `?v=3`, project, token, and optional attributes are escaped correctly.
 
    On failure: this is a local assertion, not a host code — fix the tag against the golden. A wrong
    loader URL surfaces later as [`WIDGET_LOADER_NOT_FOUND`](errors.md#widget_loader_not_found), a

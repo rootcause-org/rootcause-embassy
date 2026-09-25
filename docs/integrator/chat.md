@@ -95,7 +95,11 @@ output.
 - Use the default 7200-second TTL unless the operator approves another value. The host allows 60
   seconds of clock leeway on `iat`, `nbf`, and `exp`; that tolerance does not extend the intended TTL.
 - For a long-lived SPA, base64url-decode the signed token payload and schedule a fresh token at
-  `iat + (exp - iat) / 2`. Decoding is only for scheduling; the host remains the verifier.
+  `iat + (exp - iat) / 2`. Decoding is only for scheduling; the host remains the verifier. Hand the
+  fresh token to the mounted widget with the loader's public global,
+  `window.RootCause('update', {token: '<fresh-token>'})`; a token update is exempt from the
+  loader's context rate limit. The loader also exposes `RootCause('show')`, `RootCause('hide')` and
+  `RootCause('on', 'open'|'close'|'unreadCountChange', cb)`; there is no other public API.
 - On a 401, the v2 panel sends its private `auth-expired` bridge message to the loader. The loader
   performs one full host-page reload at most once per 60 seconds, causing the backend to mint again.
   Do not listen for an undocumented DOM event or retry with the expired token. A no-full-reload SPA
@@ -158,7 +162,7 @@ Merge these sources into the app's existing directives. `script-src` loads the w
 
 ```html
 <script async
-  src="https://app.replypen.com/chat/widget/v1/loader.js?v=2"
+  src="https://app.replypen.com/chat/widget/v1/loader.js?v=3"
   data-rc-project="acme"
   data-rc-token="<short-lived-token>"
   data-rc-locale="nl"
@@ -170,7 +174,7 @@ Page mode:
 ```html
 <div id="rc-chat" style="height: 100%"></div>
 <script async
-  src="https://app.replypen.com/chat/widget/v1/loader.js?v=2"
+  src="https://app.replypen.com/chat/widget/v1/loader.js?v=3"
   data-rc-project="acme"
   data-rc-token="<short-lived-token>"
   data-rc-mode="page"
@@ -178,8 +182,12 @@ Page mode:
 ```
 
 Required attributes are `data-rc-project` and `data-rc-token`. `data-rc-mode="page"` requires a
-valid `data-rc-target` selector. Optional presentation attributes are `data-rc-locale`,
-`data-rc-color-scheme="light|dark"`. Keep `?v=2`; it is the loader contract revision, not a
+valid `data-rc-target` selector. The loader reads its mode from its own `<script>` tag and mounts
+one instance per tag; there is no runtime switch between bubble and page. An SPA that offers both
+injects a second tag for the page route (after `RootCause('hide')` on the bubble) or reloads; the
+last injected tag owns `window.RootCause`, and both instances share the stored session for the same
+project, tenant and principal. Optional presentation attributes are `data-rc-locale`,
+`data-rc-color-scheme="light|dark"`. Keep `?v=3`; it is the loader contract revision, not a
 cache-busting timestamp. `async` is an ordinary host-page loading choice, not part of the byte-exact
 library golden. In page mode your app creates the target element; the widget tag does not emit it.
 
