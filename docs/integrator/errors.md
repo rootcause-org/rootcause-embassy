@@ -350,6 +350,13 @@ bundle.
 - **Self-fix:** Use the default or an exact HTTP or HTTPS ReplyPen origin without credentials, query, or fragment.
 - **Escalate with:** The error line and redacted base URL.
 
+## CHAT_CREDENTIALS_INVALID
+
+- **Meaning:** The minter refused a `credentials` claim: a key that is not `^[A-Z][A-Z0-9_]{0,63}$` or starts with `RC_`, more than 8 entries, or more than 8 KiB.
+- **Who fixes:** you.
+- **Self-fix:** Rename or drop the offending entries; pass only the user-scoped token and its API base.
+- **Escalate with:** The error line and the credential key names (never values).
+
 ## CHAT_DISABLED
 
 - **Meaning:** Embedded chat is disabled for the project.
@@ -412,6 +419,20 @@ bundle.
 - **Who fixes:** operator.
 - **Self-fix:** Stop rotating or minting tokens and ask the operator to verify host secret storage.
 - **Escalate with:** The error line and `rc project chat doctor --bundle`; never send secret material.
+
+## CREDENTIALS_CONFLICT
+
+- **Meaning:** A `credentials` key in the chat token equals one of the project's own env var names, so the session did not open.
+- **Who fixes:** you.
+- **Self-fix:** Rename the credential key (prefix it with your product name); a token never shadows project configuration.
+- **Escalate with:** The error line and the credential key names (never values).
+
+## CREDENTIALS_INVALID
+
+- **Meaning:** The chat token's `credentials` claim broke a rule: non-string value, a key that is not `^[A-Z][A-Z0-9_]{0,63}$` or starts with `RC_`, more than 8 entries, or more than 8 KiB.
+- **Who fixes:** you.
+- **Self-fix:** Mint with an Embassy minter, which refuses the same rules up front with `CHAT_CREDENTIALS_INVALID`.
+- **Escalate with:** The error line and the credential key names (never values).
 
 ## EMBASSY_HEALTH_INVALID
 

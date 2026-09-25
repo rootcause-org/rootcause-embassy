@@ -346,6 +346,27 @@ exactly one golden, [`fixtures/chat/widget_tag.html`](fixtures/chat/widget_tag.h
 lands here first and fans out, never the other way round. Tokens and `/chat/v1/*` are unchanged, so
 no signing vector applies.
 
+## 20. The chat token may carry per-session `credentials` for the customer's own API
+
+An embed chat agent that should *act as the chatting user* inside the customer's product needs a
+credential only the customer can issue. The chat token is already the one signed, backend-minted,
+per-user artifact, so it carries an optional `credentials` object (env name → string) that the host
+seals on the session and injects as plain workspace env on every turn. The customer mints a
+**user-scoped** token for it, so exfiltration by the agent buys nothing the user could not already do
+— that is what makes plain env acceptable instead of a host-side broker.
+
+Rejected: a per-turn credential fetch from the Embassy (a new signed round trip and a new failure mode
+per turn) and refresh on token re-mint (the session would change identity mid-conversation, and
+resume would have to reseal). The price is a hard lifetime: an expired credential means "start a new
+conversation", documented rather than engineered around.
+
+Validation is identical at mint and verify (uppercase env-name keys, no `RC_` prefix, ≤ 8 entries,
+≤ 8 KiB, string values), so an integrator sees a mint-time error instead of a
+`CREDENTIALS_INVALID` far from its cause. A key that collides with a project env var is refused
+(`CREDENTIALS_CONFLICT`), never merged: the customer's token must not shadow operator config.
+Golden: [`fixtures/chat/jwt_vector_credentials.json`](fixtures/chat/jwt_vector_credentials.json),
+keys sorted so a map-marshaling port reproduces the bytes.
+
 ---
 
 ## Fixture reconciliation notes

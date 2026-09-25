@@ -9,7 +9,8 @@ the key, so it cannot mint a token for another user, tenant, origin, or a later 
 chat key must not buy action execution.
 
 Golden: [`fixtures/chat/jwt_vector.json`](../fixtures/chat/jwt_vector.json) (fixed secret + claims +
-`iat` → the exact token string) and [`widget_tag.html`](../fixtures/chat/widget_tag.html).
+`iat` → the exact token string), [`jwt_vector_credentials.json`](../fixtures/chat/jwt_vector_credentials.json)
+(the same plus a `credentials` claim) and [`widget_tag.html`](../fixtures/chat/widget_tag.html).
 
 ## The token
 
@@ -31,7 +32,8 @@ over the **exact transmitted segments** — never a re-encode.
                 "asserted_by":"<project>","assurance":"customer_backend_jwt"},
   "tenant": "acme",
   "locale": "nl",
-  "color_scheme": "light"
+  "color_scheme": "light",
+  "credentials": {"ACME_AGENT_TOKEN": "<user-scoped token>", "ACME_API_BASE": "https://api.acme.example"}
 }
 ```
 
@@ -63,6 +65,22 @@ over the **exact transmitted segments** — never a re-encode.
 - **`locale` / `color_scheme`** are presentation hints only, deliberately unvalidated: an unsupported
   value can only mispaint chrome. `locale` is BCP-47-ish (`nl-BE` → `nl`); `color_scheme` is
   `light|dark`, anything else means auto.
+- **`credentials`** is an optional flat object of env-var name → string value that the host hands to
+  every run of the session as plain workspace env. Its purpose is a **user-scoped** token for the
+  customer's own API, minted by the customer backend for exactly the chatting principal, so the
+  agent can act as that user and nothing more. Rules, checked at mint and again by the host:
+  - keys match `^[A-Z][A-Z0-9_]{0,63}$` and never start with `RC_` (host-reserved);
+  - at most 8 entries, the claim's JSON at most 8 KiB, values are JSON strings only;
+  - an empty object is the same as absent, so it is omitted.
+
+  Any violation refuses the session open with `400 CREDENTIALS_INVALID`; a key that equals one of
+  the project's own env var names refuses it with `400 CREDENTIALS_CONFLICT` (a token never shadows
+  operator config). The host **seals** the claim on the session at open and injects it on every turn,
+  after the project env and before its own `RC_*` values. It is never logged, never in prompt text.
+- **`credentials` are not refreshed on re-mint.** A rotated token resuming a session carries the
+  claim, but the host keeps the copy sealed at open. Mint the credential with a lifetime that covers
+  a normal conversation; once it expires the agent tells the user to start a new conversation, which
+  mints fresh credentials.
 - **Optional claims are OMITTED, never nulled.** A present-but-empty `tenant` reads as "no tenant",
   and an explicit `null` would be indistinguishable while making the wire noisier.
 

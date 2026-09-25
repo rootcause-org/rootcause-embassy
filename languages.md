@@ -6,20 +6,20 @@ row.
 | Repo | Role | Status | Runtime token | Vendored fixtures |
 |---|---|---|---|---|
 | `rootcause` | **host** — the other side of every plane | live | — | private conformance fixtures |
-| `rootcause-embassy-ruby` | Ruby Embassy (Rails/Rack), gem `rootcause-embassy` | main has action/analysis/chat/API parity + typed diagnostics; gem release pending a documented flow | `ruby` (in-process eval) | `spec/fixtures/contract/` |
-| `rootcause-embassy-go` | Go Embassy, module `github.com/rootcause-org/rootcause-embassy-go` | live, 0.3.1 | `go` (yaegi) | `internal/contract/testdata/` |
+| `rootcause-embassy-ruby` | Ruby Embassy (Rails/Rack), gem `rootcause-embassy` | main has action/analysis/chat/API parity + typed diagnostics; gem release pending a documented flow; `credentials` claim pending | `ruby` (in-process eval) | `spec/fixtures/contract/` |
+| `rootcause-embassy-go` | Go Embassy, module `github.com/rootcause-org/rootcause-embassy-go` | live, 0.4.0 | `go` (yaegi) | `internal/contract/testdata/` |
 | PHP | Laravel/Symfony Embassy | planned | `php` | — |
-| `rootcause-embassy-python` | Python Embassy (Litestar/FastAPI/Django), package `rootcause_embassy`, `github.com/rootcause-org/rootcause-embassy-python` | live, 0.2.0 — vendored fixtures behind the hub | `python` (via registered runner, decision 12) | `tests/contract/testdata/` |
+| `rootcause-embassy-python` | Python Embassy (Litestar/FastAPI/Django), package `rootcause_embassy`, `github.com/rootcause-org/rootcause-embassy-python` | live, 0.2.0 — vendored fixtures behind the hub; `credentials` claim pending | `python` (via registered runner, decision 12) | `tests/contract/testdata/` |
 | Node | Express/Nest Embassy | planned | `node` | — |
 
 ## Per-plane coverage
 
-| | actions | dry_run | analysis trigger | result callback | sent-message | answers | chat mint | api plane | health |
-|---|---|---|---|---|---|---|---|---|---|
-| host | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | verify only | ✅ | — |
-| ruby | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| go | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ ¹ | ✅ |
-| python | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| | actions | dry_run | analysis trigger | result callback | sent-message | answers | chat mint | chat `credentials` | api plane | health |
+|---|---|---|---|---|---|---|---|---|---|---|
+| host | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | verify only | verify + inject | ✅ | — |
+| ruby | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | pending | ✅ | ✅ |
+| go | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ ¹ | ✅ |
+| python | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | pending | ✅ | ✅ |
 
 ¹ Go implements the API plane; its API-plane conformance cases are not ported yet.
 

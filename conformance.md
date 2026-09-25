@@ -70,7 +70,9 @@ implementation's status in [`languages.md`](languages.md), never copy it.
 - Attachment caps enforced before sending; non-2xx/transport surfaced to the caller.
 
 ## Chat
-- `jwt_vector.json` → exact `signing_input` and `token`; header bytes exact; blank secret refused;
+- `jwt_vector.json` and `jwt_vector_credentials.json` → exact `signing_input` and `token`; header
+  bytes exact; blank secret refused; `credentials` omitted when empty, refused at mint on a bad key,
+  an `RC_` key, a 9th entry or more than 8 KiB;
   origin canonicalization (lowercase host, default port dropped, path/query/fragment refused).
 - `widget_tag.html` byte-exact; optional attributes only when set; values HTML-escaped.
 

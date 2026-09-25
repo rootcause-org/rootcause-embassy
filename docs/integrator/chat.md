@@ -81,11 +81,41 @@ Mint an HS256 JWT with the chat signing secret. The payload is:
 | `principal` | required when the project declares principal kinds; all identity fields come from the authenticated backend |
 | `tenant` | required for a tenant-enabled project; omitted for a project with no tenants |
 | `locale`, `color_scheme` | optional presentation hints; grant no access |
+| `credentials` | optional env name → string map handed to the agent's runs; see below |
 
 Use [`../../fixtures/chat/jwt_vector.json`](../../fixtures/chat/jwt_vector.json) to prove byte-exact
 minting. A principal kind is a project-owned namespace such as `acme_user`; do not reuse a generic
 `user` kind across unrelated identity systems. A principal never comes from browser input or model
 output.
+
+## Pass your own user-scoped API token
+
+To let the agent call your API *as the chatting user*, mint a token for exactly that user and put it
+in the `credentials` claim. The host seals it on the session and every run of that session sees each
+entry as a plain env var (`ACME_AGENT_TOKEN`, `ACME_API_BASE`); your project brain's scripts read
+them from the environment.
+
+```go
+token, err := chat.MintEmbedToken(chatSecret, chat.Claims{
+	Project:    "acme",
+	ExternalID: user.ID,
+	Kind:       "acme_user",
+	Origin:     origin,
+	Credentials: map[string]string{
+		"ACME_AGENT_TOKEN": mintAgentToken(user, 2*time.Hour), // your own scoped, short-lived token
+		"ACME_API_BASE":    "https://api.acme.example",
+	},
+})
+```
+
+- Scope the token to what this user may already do. Treat it as readable by the agent: a
+  user-scoped token is what makes that harmless. Never pass an admin key or your chat secret.
+- Keys are `^[A-Z][A-Z0-9_]{0,63}$`, never `RC_*`, at most 8 entries and 8 KiB; values are strings.
+  The minter refuses a violation with `CHAT_CREDENTIALS_INVALID`; the host with `CREDENTIALS_INVALID`.
+- A key that equals one of your project's env var names is refused with `CREDENTIALS_CONFLICT`.
+- Credentials are fixed when a conversation opens; a rotated token does **not** refresh them. When
+  your token expires the agent tells the user to start a new conversation, which mints a fresh one.
+  Size its lifetime for one conversation.
 
 ## Mint per render and rotate
 
@@ -384,7 +414,7 @@ Do not retry a confirmation after a transport timeout until the action status is
 
 | HTTP | Codes |
 | --- | --- |
-| `400` | `BAD_BODY`, `BAD_ID`, `BAD_ATTACHMENT`, `BAD_OUTCOME`, `EMPTY_FILE`, `MISSING_FILE`, `PRINCIPAL_REQUIRED`, `TENANT_NOT_SUPPORTED`, `TENANT_REQUIRED`, `TENANT_UNAVAILABLE`, `TOO_MANY_ATTACHMENTS`, `UNKNOWN_TENANT` |
+| `400` | `BAD_BODY`, `BAD_ID`, `BAD_ATTACHMENT`, `BAD_OUTCOME`, `CREDENTIALS_CONFLICT`, `CREDENTIALS_INVALID`, `EMPTY_FILE`, `MISSING_FILE`, `PRINCIPAL_REQUIRED`, `TENANT_NOT_SUPPORTED`, `TENANT_REQUIRED`, `TENANT_UNAVAILABLE`, `TOO_MANY_ATTACHMENTS`, `UNKNOWN_TENANT` |
 | `401` | `BAD_TOKEN`, `NO_TOKEN`, `TOKEN_REPLAYED` |
 | `403` | `CHAT_DISABLED`, `ORIGIN_MISMATCH`, `ORIGIN_NOT_ALLOWED`, `SESSION_DRIFT` |
 | `404` | `UNKNOWN_ATTACHMENT`, `UNKNOWN_PROJECT`, `UNKNOWN_RUN`, `UNKNOWN_SESSION` |
