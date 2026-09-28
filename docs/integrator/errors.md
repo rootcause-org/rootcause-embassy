@@ -657,12 +657,26 @@ stays so existing links keep resolving.
 - **Self-fix:** Mint on the backend with the browser's exact `scheme://host[:port]` and do not reuse a token across origins.
 - **Escalate with:** The error line, the two non-secret origins, and `rc project chat doctor --bundle`.
 
+## ORIGIN_NEAR_MISS
+
+- **Meaning:** A doctor warning: an origin that was checked or recently rejected is not registered, but a very similar one is. One of the two is almost certainly a typo.
+- **Who fixes:** operator.
+- **Self-fix:** Compare both origins with the page's real `window.location.origin`, then correct `chat_origins` (`rc project chat set chat_origins=...`).
+- **Escalate with:** Both origins and `rc project chat doctor --bundle`.
+
 ## ORIGIN_NOT_ALLOWED
 
 - **Meaning:** The embedding origin is missing or absent from the project's exact origin allowlist.
 - **Who fixes:** operator.
 - **Self-fix:** Verify the page origin has no path/trailing slash, then request that exact origin be registered.
 - **Escalate with:** The error line, exact origin, and `rc project chat doctor --bundle`.
+
+## ORIGIN_UNRESOLVABLE
+
+- **Meaning:** A doctor warning: a `chat_origins` entry has no DNS record, so no real page can be served from it. Usually a near-miss typo of the app host.
+- **Who fixes:** operator.
+- **Self-fix:** Replace the entry with the page's real `window.location.origin`.
+- **Escalate with:** The entry and `rc project chat doctor --bundle`.
 
 ## PANEL_ERROR
 
