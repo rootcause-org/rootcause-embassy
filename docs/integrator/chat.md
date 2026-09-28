@@ -127,8 +127,8 @@ token, err := chat.MintEmbedToken(chatSecret, chat.Claims{
 - For a long-lived SPA, base64url-decode the signed token payload and schedule a fresh token at
   `iat + (exp - iat) / 2`. Decoding is only for scheduling; the host remains the verifier. Hand the
   fresh token to the mounted widget with the loader's public global,
-  `window.RootCause('update', {token: '<fresh-token>'})`; a token update is exempt from the
-  loader's context rate limit. The loader also exposes `RootCause('show')`, `RootCause('hide')` and
+  `window.RootCause('update', {token: '<fresh-token>'})` (`update` takes only `token`). The loader
+  also exposes `RootCause('show')`, `RootCause('hide')` and
   `RootCause('on', 'open'|'close'|'unreadCountChange', cb)`; there is no other public API.
 - On a 401, the v2 panel sends its private `auth-expired` bridge message to the loader. The loader
   performs one full host-page reload at most once per 60 seconds, causing the backend to mint again.
