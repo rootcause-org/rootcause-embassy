@@ -369,6 +369,19 @@ keys sorted so a map-marshaling port reproduces the bytes.
 
 ---
 
+## 21. Signed inline chat attachment capability
+
+Bounded bytes travel with the signed action invocation, keyed by parameter name. This reuses the
+analysis plane's base64 convention and avoids a capability endpoint, downloader and extra request.
+The host owns authorization; language ports own invocation-scoped materialization. Limits are
+5 files / 8 MiB each / 20 MiB total raw / 32 MiB inbound body. Dry runs omit the bytes.
+
+This is additive under protocol 1, but silently ignoring requested evidence is unsafe. Ruby supports
+`attachments_inline`; other implemented ports explicitly refuse nonempty maps until implemented.
+Go/Python materialization, larger files and asynchronous transfer are deferred. Schema types stay
+unchanged. Missing authorized blobs and corrupt content are per-file errors, allowing primary work
+and other transfers to continue. See [inline attachment contract](planes/actions.md#inline-chat-attachments-optional-capability).
+
 ## Fixture reconciliation notes
 
 The pre-hub goldens existed in two divergent copies. Resolved as follows:
@@ -385,5 +398,5 @@ The pre-hub goldens existed in two divergent copies. Resolved as follows:
 
 ## Known gaps (host-tracked, deliberately NOT in this contract)
 
-Embassy attachments over the action plane · a customer-held approval factor · MCP-per-end-user. Do not
+A customer-held approval factor · MCP-per-end-user. Do not
 invent wire shapes for these in a language repo.

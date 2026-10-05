@@ -1023,3 +1023,11 @@ stays so existing links keep resolving.
 - **Who fixes:** you.
 - **Self-fix:** Set one non-empty CSS selector only when mode is `page`; omit target for the floating widget.
 - **Escalate with:** The error line, Embassy version, and redacted widget configuration.
+
+## Action inline attachment refusal (400 invalid_request)
+
+A nonempty inline attachment map requires `attachments_inline` support. Malformed metadata,
+selection mismatch, duplicate IDs, or declared/encoded/body limits also refuse before execution.
+Upgrade to a supporting Embassy or retry the action without files and attach them through the
+product UI. An authorized missing blob (`unavailable`) or corrupt decoded content (`corrupt`) is a
+per-file result for the script, not a whole-action refusal. Never include bytes in an escalation.

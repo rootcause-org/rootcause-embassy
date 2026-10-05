@@ -24,6 +24,14 @@ implementation's status in [`languages.md`](languages.md), never copy it.
 - `invocation_principal.json` decodes the trusted principal identity + typed claims and exposes them
   only for the action invocation; the principal-less fixtures remain accepted and expose no stale
   `RC_PRINCIPAL_*` values.
+- `invocation_attachments.json`: verify signatures and decode parameter-keyed metadata; supporting
+  ports materialize the tiny file byte-for-byte and preserve the unavailable descriptor. Unsupported
+  ports refuse the nonempty map as signed 400 before execution (even on dry run).
+- Attachment negatives: unknown parameter, selection mismatch, duplicate UUID, malformed metadata,
+  file/count/total/encoded bounds; corrupt base64/size/hash becomes per-file `corrupt`. Dry run never
+  materializes. Temporary files and inherited attachment/deadline context are cleared/restored on
+  success, exception and timeout; absent payload exposes no stale context. Supporting health includes
+  `attachments_inline` per `health_response_attachments.json` (version substituted); unsupported health does not.
 - Success envelope key order == `result_ok.json`.
 - Refusal fixtures define the required minimum fields and values for
   `result_refusal_{bad_signature,replay,schema_violation,resolve_failed}.json`. An emitted refusal may
@@ -33,7 +41,7 @@ implementation's status in [`languages.md`](languages.md), never copy it.
   (the hub fixtures say `ruby`, so every non-Ruby port refuses them); omitted `runtime` is accepted;
   non-boolean `dry_run` → 400 **before** any fetch; stale `issued_at` → 409; reserved `rc_tenant_*`
   / `tenant_*` / `rc_principal_*` / principal-selector names in params **or** schema → 422; partial
-  tenant or principal context → 400; body over the inbound cap →
+  tenant or principal context → 400; action body over 32 MiB (bounded read even without Content-Length) →
   400; runner exception → signed `200`, `ok:false`, implementation-defined class (decision 6e) with
   `error.backtrace` a newline-joined STRING, per `result_action_error.json`.
 - Tenant-context policy: with strict tenant context enabled, an absent tuple is accepted only when

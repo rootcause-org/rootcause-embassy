@@ -35,7 +35,8 @@ Embassy must keep — the host-side probe uses it to prove a mount exists withou
 Golden: [`fixtures/actions/invocation_flat.json`](../fixtures/actions/invocation_flat.json),
 [`invocation_tenant.json`](../fixtures/actions/invocation_tenant.json),
 [`invocation_principal.json`](../fixtures/actions/invocation_principal.json),
-[`invocation_dry_run.json`](../fixtures/actions/invocation_dry_run.json).
+[`invocation_dry_run.json`](../fixtures/actions/invocation_dry_run.json),
+[`invocation_attachments.json`](../fixtures/actions/invocation_attachments.json).
 
 ```json
 {
@@ -116,6 +117,55 @@ scope each query with that binding. Project rule `actions-only-host-stamped-env`
   cannot impersonate a prior requester.
 - `dry_run: true` validates principal shape and reserved names but starts no action script. The same
   principal is present on a later real execution only because the host signs it again.
+
+### Inline chat attachments (optional capability)
+
+Golden: [`invocation_attachments.json`](../fixtures/actions/invocation_attachments.json).
+`attachments` is a reserved top-level envelope field: an object keyed by action parameter name.
+It is not a reserved parameter name; the selected UUIDs remain ordinary `string[]` params.
+Only approved actions whose host manifest marks that parameter `attachment: chat` receive bytes.
+The marker is host-only; wire schema remains `type: string[]` and `required`.
+
+Each value is an array of descriptors with exactly `attachment_id` (canonical UUID), `filename`
+(non-empty string), `mime_type` (non-empty string), `size_bytes` (non-negative integer), and either:
+
+- `sha256` (64 lowercase hex characters) plus `content_base64` (strict standard base64); or
+- `error: "unavailable"`, with no `sha256` or `content_base64`.
+
+Names and MIME types cannot contain NUL. Parameter names must identify `string[]` params/schema;
+ordered descriptor IDs must equal the selected parameter IDs. IDs must be unique across the whole
+map. Malformed metadata, mismatched selections, duplicates, or caps refuse as signed
+`400 invalid_request` before script execution. Empty maps are equivalent to absence.
+
+Limits across the map: **5 files, 8 MiB per file, 20 MiB total decoded bytes**, and **32 MiB raw
+invocation body** (1 MiB = 1,048,576 bytes). Declared sizes and encoded base64 lengths are bounded
+before decoding/allocation. Body reads are bounded independently of `Content-Length`.
+Validly shaped content that fails strict base64 decoding, declared-size verification or SHA-256
+verification becomes a per-file `error: "corrupt"`; authorized missing bytes become `unavailable`.
+Other authorized files and the action continue. Bytes never enter params, logs, or action ledgers.
+
+The host authorizes at proposal and again before execution using the trusted chat run's live
+session, project and tenant. Files must be user-origin, bound to a sent message, and real uploaded
+bytes (not assistant output or generated HTML artifacts). Same-principal files from another session,
+unknown IDs, expired sessions and over-limit selections refuse before dispatch. Model hints such as
+`source_session_id` cannot authorize a file. A blob missing after successful authorization produces
+an `unavailable` descriptor. HMAC signs every descriptor and byte with the invocation.
+
+A supporting receiver advertises `attachments_inline` in signed health capabilities
+([health golden](../fixtures/actions/health_response_attachments.json)). An implemented
+port without materialization support MUST refuse a nonempty map as signed `400 invalid_request`,
+including on dry run; it must never silently discard requested evidence. Hosts must not assume
+support from protocol `1` alone. Absent attachments preserve existing invocation bytes.
+
+The host omits this field on dry run. Receivers validate any supplied map but never decode or
+materialize files on dry run. Materialization is invocation-scoped and mechanism-neutral. Ruby
+uses temporary files and `RC_ACTION_ATTACHMENTS`, a JSON **map** preserving parameter names and
+metadata, replacing `content_base64`/`sha256` with `path` or `error: "unavailable"|"corrupt"`.
+`RC_ACTION_DEADLINE_AT` is epoch seconds: the earliest total/execution deadline minus 2 seconds.
+Both variables are cleared/restored even when the field is absent; temporary files are removed on
+success, error and timeout. In-process exposure is serialized with the execution mutex.
+Scripts must preserve successful primary work and report each transfer failure separately; retry
+idempotency and storage cleanup belong to the approved script.
 
 ## 2. Script fetch — Embassy → host (GET, signed)
 

@@ -121,7 +121,9 @@ port bug the host cannot decode. Golden: [`result_action_error.json`](fixtures/a
   **STRICT**. The host decodes with unknown fields disallowed; an unknown field is a `400`. These are
   our own contract with the Embassy, so drift must surface loudly.
 - **Action and result direction** is **tolerant-inbound**: ignore fields you do not know. This is what
-  makes additive changes non-breaking, which is the whole versioning story (see below).
+  makes additive changes non-breaking, which is the whole versioning story (see below). The known
+  safety-sensitive `attachments` action extension is an exception: a port without support refuses
+  nonempty payloads as signed `400 invalid_request`, rather than executing without evidence.
 
 ## Protocol version
 

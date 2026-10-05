@@ -85,3 +85,16 @@ Invocations may carry an optional host-stamped `principal` object with `kind`, `
 JSON). Decode the field tolerantly and keep accepting its absence. Never accept principal selectors or
 `principal_claim_*` in action params, nor inherited `RC_PRINCIPAL_*` process env. Trust the principal only after the invocation
 signature verifies.
+
+## Chat files on actions
+
+Attachment-enabled actions receive selected chat UUIDs in ordinary params and authorized bytes in a
+separate signed payload. Require `attachments_inline` in signed health before enabling this workflow;
+Ruby supports materialization, while Go/Python refuse it until implemented. Limits: 5 files, 8 MiB
+each, 20 MiB total; the mount must accept a 32 MiB bounded request. Dry runs omit file payloads.
+
+Ruby scripts read the parameter-keyed JSON map from `RC_ACTION_ATTACHMENTS`: each item has metadata
+and a temporary `path` or `error` (`unavailable`/`corrupt`). Paths last only for this invocation. Use
+`RC_ACTION_DEADLINE_AT` to stop transfers early enough to return a saved primary result. Report
+partial transfer success and make retries idempotent; do not roll back a created ticket because an
+upload failed. Never log bytes. See the [wire contract](../../planes/actions.md#inline-chat-attachments-optional-capability).
