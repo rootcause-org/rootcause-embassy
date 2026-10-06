@@ -87,7 +87,7 @@ over the **exact transmitted segments** — never a re-encode.
 ## Widget tag
 
 ```html
-<script src="{chat_base_url}/chat/widget/v1/loader.js?v=3"
+<script src="{chat_base_url}/chat/widget/v1/loader.js?v=4"
         data-rc-project="<project>"
         data-rc-token="<token>"
         data-rc-mode="page"
@@ -96,7 +96,7 @@ over the **exact transmitted segments** — never a re-encode.
         data-rc-color-scheme="light"></script>
 ```
 
-- Loader path `/chat/widget/v1/loader.js`; **loader contract revision `?v=3`**. The host
+- Loader path `/chat/widget/v1/loader.js`; **loader contract revision `?v=4`**. The host
   immutable-caches that asset, so the revision MUST be bumped whenever a generated attribute starts
   requiring new loader behavior — otherwise an already-open browser pairs a new tag with stale
   JavaScript.
@@ -108,3 +108,36 @@ over the **exact transmitted segments** — never a re-encode.
 - **Mint a fresh token per render.** Tokens are short-lived and single-use — never cache one across
   renders.
 - All attribute values are HTML-escaped.
+- The token is readable by host-page JavaScript (it rides a host attribute or the host's refresh
+  hook). The iframe isolates CSS/DOM and serves one shared hosted client; it does **not** protect the
+  token from host-page XSS. Short TTL, single-use `jti` and the pinned `origin` bound that exposure.
+
+## Persistent mode (Turbo)
+
+Opt-in via `data-rc-persist="turbo"` on the loader tag: one conversation iframe survives the host's
+Turbo (Hotwire) soft navigations. Only Turbo is supported; other SPAs/routers are not. Implementations
+add no helper for it — a host builds its own tag from the chat token minter and the loader path/revision
+constants.
+
+- **No `data-rc-token`.** The host queues `RootCause('boot', {refreshToken})` on the standard stub
+  **before** the loader tag. `refreshToken: () => Promise<string>` calls the host's own authenticated
+  endpoint; the loader is its only caller and never adopts a token rendered into HTML. A rejection
+  carrying `{status: 401|403}` fails closed: the embed is removed.
+- **Refresh endpoint (host-owned):** same-origin `POST` behind the host's normal authentication **and**
+  its normal authorization of the account + tenant route (tenant from the authorized server
+  context/route, never a body param), CSRF-protected, `Cache-Control: no-store`. Answers
+  `200 {"token":"<jwt>"}` or `401`/`403`. Mints with the existing chat token helper; TTL unchanged.
+- The loader renews at the token's half-life and on focus/visibility; the panel replays a request
+  once after a `401` with a re-minted token; a new conversation asks for a fresh token (single-use
+  `jti`) without a page reload.
+- **`data-rc-scope`**: opaque, secret-free string naming the authorized scope the page belongs to
+  (e.g. `project:tenant:user`). Capture always stops before a page of another scope paints. A page of
+  ANOTHER scope with unsent recording/attachments first gets a stay/discard prompt; a page carrying NO
+  scope (sign-out, revoked access, an error page) ends the conversation at once and unsent work is lost.
+  The loader also ends it when a refreshed token names another identity than the first one.
+- **`data-rc-target`** (optional placeholder selector): where present the conversation covers it
+  (`page`); elsewhere it floats compact on the right, expandable to a viewport overlay or minimized to
+  the launcher (which shows a running recording timer).
+- API additions: `RootCause('presentation', 'page'|'compact'|'expanded'|'minimized')` and
+  `RootCause('destroy')`. `boot`/`update`/`show`/`hide`/`on` are unchanged; in persistent mode
+  `update` ignores a token (the hook is the only source).

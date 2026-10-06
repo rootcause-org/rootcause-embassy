@@ -129,8 +129,9 @@ token, err := chat.MintEmbedToken(chatSecret, chat.Claims{
   fresh token to the mounted widget with the loader's public global,
   `window.RootCause('update', {token: '<fresh-token>'})` (`update` takes only `token`). The loader
   also exposes `RootCause('show')`, `RootCause('hide')` and
-  `RootCause('on', 'open'|'close'|'unreadCountChange', cb)`; there is no other public API.
-- On a 401, the v2 panel sends its private `auth-expired` bridge message to the loader. The loader
+  `RootCause('on', 'open'|'close'|'unreadCountChange', cb)`; persistent mode adds `presentation` and
+  `destroy` ([Persistent mode](#persistent-mode-turbo)). There is no other public API.
+- Outside persistent mode, on a 401 the panel sends its private `auth-expired` bridge message to the loader. The loader
   performs one full host-page reload at most once per 60 seconds, causing the backend to mint again.
   Do not listen for an undocumented DOM event or retry with the expired token. A no-full-reload SPA
   must rotate and remount before expiry; v2 exposes no public auth-expired callback. A persistent
@@ -192,7 +193,7 @@ Merge these sources into the app's existing directives. `script-src` loads the w
 
 ```html
 <script async
-  src="https://app.replypen.com/chat/widget/v1/loader.js?v=3"
+  src="https://app.replypen.com/chat/widget/v1/loader.js?v=4"
   data-rc-project="acme"
   data-rc-token="<short-lived-token>"
   data-rc-locale="nl"
@@ -204,7 +205,7 @@ Page mode:
 ```html
 <div id="rc-chat" style="height: 100%"></div>
 <script async
-  src="https://app.replypen.com/chat/widget/v1/loader.js?v=3"
+  src="https://app.replypen.com/chat/widget/v1/loader.js?v=4"
   data-rc-project="acme"
   data-rc-token="<short-lived-token>"
   data-rc-mode="page"
@@ -213,13 +214,66 @@ Page mode:
 
 Required attributes are `data-rc-project` and `data-rc-token`. `data-rc-mode="page"` requires a
 valid `data-rc-target` selector. The loader reads its mode from its own `<script>` tag and mounts
-one instance per tag; there is no runtime switch between bubble and page. An SPA that offers both
+one instance per tag; outside [persistent mode](#persistent-mode-turbo) there is no runtime switch
+between bubble and page. An SPA that offers both
 injects a second tag for the page route (after `RootCause('hide')` on the bubble) or reloads; the
 last injected tag owns `window.RootCause`, and both instances share the stored session for the same
 project, tenant and principal. Optional presentation attributes are `data-rc-locale`,
-`data-rc-color-scheme="light|dark"`. Keep `?v=3`; it is the loader contract revision, not a
+`data-rc-color-scheme="light|dark"`. Keep `?v=4`; it is the loader contract revision, not a
 cache-busting timestamp. `async` is an ordinary host-page loading choice, not part of the byte-exact
 library golden. In page mode your app creates the target element; the widget tag does not emit it.
+
+## Persistent mode (Turbo)
+
+For a Turbo (Hotwire) app that should keep one conversation open across soft navigations. Only Turbo
+is supported; other SPAs and routers are not.
+
+```html
+<script>
+  window.RootCause = window.RootCause || function () { (RootCause.q = RootCause.q || []).push(arguments); };
+  RootCause('boot', {
+    refreshToken: async () => {
+      const res = await fetch('/replypen/chat_token', {
+        method: 'POST',
+        headers: {'X-CSRF-Token': document.querySelector('meta[name=csrf-token]').content},
+      });
+      if (!res.ok) throw Object.assign(new Error('chat token'), {status: res.status});
+      return (await res.json()).token;
+    },
+  });
+</script>
+<script async
+  src="https://app.replypen.com/chat/widget/v1/loader.js?v=4"
+  data-rc-project="acme"
+  data-rc-persist="turbo"
+  data-rc-scope="acme:tenant-42:user-8f3"
+  data-rc-target="#rc-chat"></script>
+```
+
+- **No `data-rc-token`.** Register `refreshToken` through the stub queue before the loader tag. The
+  loader is its only caller and never adopts a token rendered into HTML. Reject with
+  `{status: 401}` or `{status: 403}` to fail closed: the embed is removed.
+- **Refresh endpoint** (yours): same-origin `POST` under your normal authentication **and** your
+  normal authorization of the account and tenant route. Take the tenant from the authorized server
+  context or route, never a body param. CSRF-protected, `Cache-Control: no-store`, answers
+  `200 {"token":"<jwt>"}` or `401`/`403`. Mint with your Embassy's chat token helper; keep the
+  default TTL. Same origin, rate-limit and logging rules as the [minting endpoint](#minting-endpoint).
+- The loader renews at the token's half-life and on focus/visibility, the panel replays a request
+  once after a `401` with a re-minted token, and a new conversation fetches a fresh token (single-use
+  `jti`) without a page reload. `RootCause('update')` ignores tokens in this mode.
+- **`data-rc-scope`** is an opaque, secret-free name for the authorized scope the page belongs to,
+  e.g. `project:tenant:user`. Render the loader tag, with its scope, in the `<body>` of every page.
+  Capture stops before a page of another scope paints. With unsent recording or attachments the user
+  first chooses stay or discard; a page with NO scope (sign-out, revoked access, an error page) ends the
+  conversation at once, unsent work included. A refreshed token for another identity also ends it.
+- **`data-rc-target`** is optional. On pages that render that placeholder the conversation covers it;
+  elsewhere it floats compact on the right, can be expanded to a viewport overlay, or minimized to the
+  launcher (which shows a running recording timer). Drive it with
+  `RootCause('presentation', 'page'|'compact'|'expanded'|'minimized')`; end it with
+  `RootCause('destroy')`.
+- The token is readable by your page's JavaScript, here as with `data-rc-token`. The iframe isolates
+  CSS/DOM, not the token from host-page XSS; your CSP and the short, single-use, origin-pinned token
+  are the controls.
 
 ## HTTP conventions
 

@@ -636,6 +636,13 @@ stays so existing links keep resolving.
 - **Self-fix:** Check connectivity, DNS, TLS, CSP, and the configured ReplyPen origin before retrying.
 - **Escalate with:** The error line, UTC timestamp, and `rc project chat doctor --bundle`.
 
+## NO_REFRESH_HOOK
+
+- **Meaning:** A persistent (`data-rc-persist="turbo"`) loader booted without a `refreshToken` hook, so it has no token source.
+- **Who fixes:** you.
+- **Self-fix:** Queue `RootCause('boot', {refreshToken})` on the stub before the loader tag; see [persistent mode](chat.md#persistent-mode-turbo).
+- **Escalate with:** The error line and `rc project chat doctor --bundle`.
+
 ## NO_TOKEN
 
 - **Meaning:** The chat request has no usable `Authorization: Bearer <token>` header.
@@ -1000,7 +1007,7 @@ stays so existing links keep resolving.
 
 - **Meaning:** The browser received `404` for `/chat/widget/v1/loader.js`.
 - **Who fixes:** you.
-- **Self-fix:** Use `https://app.replypen.com/chat/widget/v1/loader.js?v=3` exactly and remove proxy path rewriting.
+- **Self-fix:** Use `https://app.replypen.com/chat/widget/v1/loader.js?v=4` exactly and remove proxy path rewriting.
 - **Escalate with:** The console error, requested URL without token/query data, and `rc project chat doctor --bundle`.
 
 ## WIDGET_MODE_INVALID
