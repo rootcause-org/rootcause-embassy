@@ -415,6 +415,27 @@ helper for it: the token minter plus the loader path/revision constants are enou
 framework-specific controller would be the integrator's authorization code in our repo. Tokens and
 `/chat/v1/*` are unchanged, so no signing vector applies.
 
+## 24. `page_url` is an untrusted, loader-owned, turn-only hint
+
+"What am I looking at?" needs the page, and only the browser knows it. The [page context](planes/chat.md#page-context-page_url)
+rides the browser → host chat API as an optional `page_url` on the message turn, never a token claim:
+a claim would freeze one page for the token's lifetime and push per-navigation work onto the
+integrator's backend. The hosted loader reads `location` itself, so integrators assert nothing; a
+host page's own script could still lie on the port, which is the trust level of the page that holds
+the token anyway, and the origin pin below bounds it to a path on that same site.
+
+It stays a hint because the browser supplies it. The host pins it to the session's bound origin,
+strips query/fragment/userinfo, drops capability-looking paths whole (a reset or invite link is a
+credential, and partial redaction leaks its shape) and renders it for one turn only. It never
+authorizes, never scopes, is never fetched, and is never stored as a message, so a share link or
+transcript cannot leak it. Invalid values are ignored rather than refused: a hint must never fail a
+turn.
+
+No fan-out: no JWT claim, no signed edge, no widget-tag attribute and no loader revision changed, so
+the SDK fixtures, the chat JWT vector and the signing vectors are untouched and the Ruby, Go and Python
+Embassies have nothing to conform to. The rootcause host and its hosted loader are the only
+implementations.
+
 ## Fixture reconciliation notes
 
 The pre-hub goldens existed in two divergent copies. Resolved as follows:

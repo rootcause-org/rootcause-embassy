@@ -141,3 +141,32 @@ constants.
 - API additions: `RootCause('presentation', 'page'|'compact'|'expanded'|'minimized')` and
   `RootCause('destroy')`. `boot`/`update`/`show`/`hide`/`on` are unchanged; in persistent mode
   `update` ignores a token (the hook is the only source).
+
+## Page context (`page_url`)
+
+`POST /chat/v1/message` takes an optional top-level string `page_url`: the host page the user had open
+when sending this message. It is an **untrusted contextual hint**, never identity, tenant, principal,
+scope or authorization, and the host never fetches it.
+
+- **Kept only** on an embed-surface session and only when its origin equals the session's bound
+  embedding origin (scheme + host + port, default ports normalized; `http` only on loopback).
+- **Normalized**: userinfo, query and fragment stripped; at most 2048 bytes.
+- **Dropped whole** when the path looks like a capability: a segment containing `token`, `secret`,
+  `passw`, `apikey`/`api_key`/`api-key`; a segment word `reset`, `invite(s)`, `invitation(s)`,
+  `confirm(ation)`, `magic`, `verify`/`verification`, `unlock`, `oauth(2)`, `callback(s)`, `saml`,
+  `sso`, `signature`, `otp`; or a long opaque token-like segment. Numeric ids, UUIDs and lowercase
+  slugs are kept.
+- **Invalid is silent**: ignored, never a 4xx.
+- **Turn-only**: rendered to the agent for that turn as untrusted, superseding earlier page hints;
+  absent means "no current page". Never persisted as a chat message, never in transcripts, share
+  links or the viewer. Queued follow-ups carry none.
+
+The hosted loader owns it for drop-in embeds. At send time the panel asks over the private
+MessageChannel (`page-request {id}` panel → host, `page {id, url}` host → panel); the loader reads
+`location` itself and pre-filters with the same rules. A stale cached loader never answers; the panel
+gives up after 1s and sends no page. No attribute, `update` field or loader revision changed.
+API-only clients MAY send it; nothing requires it.
+
+The panel opens a session on first send or upload, not on load, so a rendered token's `jti` burns
+only when the user engages. A cold open resumes the principal's newest conversation active within 2h,
+else shows a fresh composer with recent conversations.

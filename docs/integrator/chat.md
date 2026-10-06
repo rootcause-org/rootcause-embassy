@@ -324,7 +324,17 @@ Content-Type: application/json
 ```
 
 The message id is caller-generated and stable across a retry. A question response uses a
-`data-answers` part. The response is `text/event-stream`:
+`data-answers` part.
+
+Optional top-level `"page_url": "https://app.acme.example/invoices/42"` tells the agent which page the
+user has open, for this turn only. The widget sends it automatically; you add nothing to the tag or
+token. A handwritten client may send it. The host keeps it only when its origin matches the session's
+embedding origin, strips query, fragment and userinfo, and drops it entirely for capability-looking
+paths (reset, invite, verify, oauth/callback, token-like segments); invalid values are silently
+ignored. It is a hint, never authentication or scope, and is not stored in the transcript. Keep
+secrets out of paths anyway.
+
+The response is `text/event-stream`:
 
 ```text
 id: 1
