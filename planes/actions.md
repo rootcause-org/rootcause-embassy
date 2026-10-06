@@ -57,7 +57,6 @@ Golden: [`fixtures/actions/invocation_flat.json`](../fixtures/actions/invocation
   "action_run_id": "<uuid>",
   "nonce": "<str>",
   "issued_at": "<RFC3339 UTC>",
-  "dry_run": true,
   "schema": {"<param_name>": {"type": "string", "required": true}}
 }
 ```
@@ -70,8 +69,9 @@ Golden: [`fixtures/actions/invocation_flat.json`](../fixtures/actions/invocation
 - In reverse-secret map mode, the Embassy reads only `project_id` before signature verification to
   select the candidate key. Missing, malformed or unknown ids refuse as opaque `401 bad_signature`;
   nothing else in the invocation is trusted until the raw-body HMAC passes.
-- **`dry_run` is emitted iff true.** An executing invocation's bytes are byte-identical to the
-  pre-dry_run contract.
+- **`dry_run` is emitted iff true** (golden [`invocation_dry_run.json`](../fixtures/actions/invocation_dry_run.json));
+  an executing invocation never carries it. Additive optional fields such as `action_run_id` may
+  appear on executing invocations; receivers decode tolerantly.
 - **`principal` is optional.** When present, it is resolved and stamped by the host, never copied from
   action params or model output. `kind` and `external_id` are non-empty strings. `claims` is always an
   object and may be empty; its names match `[a-z][a-z0-9_]*` and its values are strings, integers, or homogeneous arrays of
