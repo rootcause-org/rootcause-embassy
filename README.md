@@ -29,7 +29,7 @@ CONTRACT.md        the wire contract, all planes (start here)
 planes/            one file per plane: actions, analysis, chat, api
 fixtures/          CANONICAL goldens + signing vectors; every repo vendors these
 languages.md       registry + status matrix of the implementations
-decisions.md       the 22 pinned decisions + versioning policy
+decisions.md       the 23 pinned decisions + versioning policy
 scripts/check.sh   mechanical gate: fixture bytes, signing vectors, links, style
 ```
 

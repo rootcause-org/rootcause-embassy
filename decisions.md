@@ -344,7 +344,7 @@ before this hub did, so the Go, Ruby and Python widget tags and every integrator
 brief's Permissions-Policy guidance with a loader that could not act on it. The revision lives in
 exactly one golden, [`fixtures/chat/widget_tag.html`](fixtures/chat/widget_tag.html); a host bump
 lands here first and fans out, never the other way round. Tokens and `/chat/v1/*` are unchanged, so
-no signing vector applies. The current value is pinned by [decision 22](#22-loader-contract-revision-is-v4-turbo-persistent-mode).
+no signing vector applies. The current value is pinned by [decision 23](#23-loader-contract-revision-is-v4-turbo-persistent-mode).
 
 ## 20. The chat token may carry per-session `credentials` for the customer's own API
 
@@ -404,7 +404,7 @@ share-link import are deferred.
 
 ---
 
-## 22. Loader contract revision is `?v=4`: Turbo persistent mode
+## 23. Loader contract revision is `?v=4`: Turbo persistent mode
 
 The hosted loader gained an opt-in persistent mode (`data-rc-persist="turbo"`, `data-rc-scope`, the
 `refreshToken` boot hook, `presentation`/`destroy`). New attributes need the new loader, so the
