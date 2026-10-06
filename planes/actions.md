@@ -146,14 +146,16 @@ Each value is an array of descriptors with exactly `attachment_id` (canonical UU
 (non-empty string), `mime_type` (non-empty string), `size_bytes` (non-negative integer), and either:
 
 - `sha256` (64 lowercase hex characters) plus `content_base64` (strict standard base64); or
-- `error: "unavailable"`, with no `sha256` or `content_base64`.
+- `error: "unavailable"`, with no `sha256` or `content_base64`. Its `size_bytes` is informational
+  and uncapped (the host sends an authorized file past the byte caps this way).
 
 Names and MIME types cannot contain NUL. Parameter names must identify `string[]` params/schema;
 ordered descriptor IDs must equal the selected parameter IDs. IDs must be unique across the whole
 map. Malformed metadata, mismatched selections, duplicates, or caps refuse as signed
 `400 invalid_request` before script execution. Empty maps are equivalent to absence.
 
-Limits across the map: **5 files, 8 MiB per file, 20 MiB total decoded bytes**, and **32 MiB raw
+Limits across the map: **5 files**, and for descriptors carrying bytes **8 MiB per file, 20 MiB total
+decoded bytes**, and **32 MiB raw
 invocation body** (1 MiB = 1,048,576 bytes). Declared sizes and encoded base64 lengths are bounded
 before decoding/allocation. Body reads are bounded independently of `Content-Length`.
 Validly shaped content that fails strict base64 decoding, declared-size verification or SHA-256
@@ -163,7 +165,8 @@ Other authorized files and the action continue. Bytes never enter params, logs, 
 The host authorizes at proposal and again before execution using the trusted chat run's live
 session, project and tenant. Files must be user-origin, bound to a sent message, and real uploaded
 bytes (not assistant output or generated HTML artifacts). Same-principal files from another session,
-unknown IDs, expired sessions and over-limit selections refuse before dispatch. Model hints such as
+unknown IDs, expired sessions and over-count selections refuse before dispatch; a file past the byte
+caps is sent as `unavailable`. Model hints such as
 `source_session_id` cannot authorize a file. A blob missing after successful authorization produces
 an `unavailable` descriptor. HMAC signs every descriptor and byte with the invocation.
 

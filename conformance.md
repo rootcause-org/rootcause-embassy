@@ -31,7 +31,8 @@ implementation's status in [`languages.md`](languages.md), never copy it.
   ports materialize the tiny file byte-for-byte and preserve the unavailable descriptor. Unsupported
   ports refuse the nonempty map as signed 400 before execution (even on dry run).
 - Attachment negatives: unknown parameter, selection mismatch, duplicate UUID, malformed metadata,
-  file/count/total/encoded bounds; corrupt base64/size/hash becomes per-file `corrupt`. Dry run never
+  file/count/total/encoded bounds (byte bounds count only descriptors carrying bytes; an `unavailable`
+  descriptor declaring more than 8 MiB is accepted); corrupt base64/size/hash becomes per-file `corrupt`. Dry run never
   materializes. Temporary files and inherited attachment/deadline context are cleared/restored on
   success, exception and timeout; absent payload exposes no stale context. Supporting health includes
   `attachments_inline` per `health_response_attachments.json` (version substituted); unsupported health does not.

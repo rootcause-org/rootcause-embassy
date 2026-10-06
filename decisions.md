@@ -380,7 +380,9 @@ This is additive under protocol 1, but silently ignoring requested evidence is u
 `attachments_inline`; other implemented ports explicitly refuse nonempty maps until implemented.
 Go/Python materialization, larger files and asynchronous transfer are deferred. Schema types stay
 unchanged. Missing authorized blobs and corrupt content are per-file errors, allowing primary work
-and other transfers to continue. See [inline attachment contract](planes/actions.md#inline-chat-attachments-optional-capability).
+and other transfers to continue. Byte caps bind delivered descriptors only: an authorized file past
+the per-file or running-total cap travels as `unavailable` with its true `size_bytes`, so one large
+upload never blocks the action and the script can still name it. See [inline attachment contract](planes/actions.md#inline-chat-attachments-optional-capability).
 
 ## 22. Action-run id is the delegated chat-context locator
 
