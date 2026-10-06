@@ -36,7 +36,8 @@ Golden: [`fixtures/actions/invocation_flat.json`](../fixtures/actions/invocation
 [`invocation_tenant.json`](../fixtures/actions/invocation_tenant.json),
 [`invocation_principal.json`](../fixtures/actions/invocation_principal.json),
 [`invocation_dry_run.json`](../fixtures/actions/invocation_dry_run.json),
-[`invocation_attachments.json`](../fixtures/actions/invocation_attachments.json).
+[`invocation_attachments.json`](../fixtures/actions/invocation_attachments.json),
+[`invocation_action_run.json`](../fixtures/actions/invocation_action_run.json).
 
 ```json
 {
@@ -53,6 +54,7 @@ Golden: [`fixtures/actions/invocation_flat.json`](../fixtures/actions/invocation
     "external_id": "user-8f3",
     "claims": {"user_id": "user-8f3", "person_id": 103, "backup_ids": ["backup-7"]}
   },
+  "action_run_id": "<uuid>",
   "nonce": "<str>",
   "issued_at": "<RFC3339 UTC>",
   "dry_run": true,
@@ -117,6 +119,20 @@ scope each query with that binding. Project rule `actions-only-host-stamped-env`
   cannot impersonate a prior requester.
 - `dry_run: true` validates principal shape and reserved names but starts no action script. The same
   principal is present on a later real execution only because the host signs it again.
+
+### Action-run provenance
+
+- **`action_run_id`** is the host's ledger id for this execution (canonical lowercase UUID). The host
+  emits it on every executing invocation and omits it on dry run; receivers MUST keep accepting
+  invocations without it. It is host-stamped, never copied from params or model output.
+- **Exposure is trusted and invocation-scoped**, like the principal context: subprocess
+  implementations delete any inherited `RC_ACTION_RUN_ID`, then set it from the verified invocation; an
+  in-process Embassy may pass it as a typed argument. Cleared/restored afterwards, so stale process env
+  cannot name a prior execution. A malformed value refuses as `400 invalid_request`.
+- A script that hands its origin to another rootcause plane (an analysis trigger's
+  [`context_refs`](analysis.md#context-references)) reads this value only — never a param, user text
+  or a model-supplied hint. Possessing the id grants nothing by itself; the host authorizes every use
+  from its own rows.
 
 ### Inline chat attachments (optional capability)
 

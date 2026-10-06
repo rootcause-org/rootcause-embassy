@@ -24,6 +24,9 @@ implementation's status in [`languages.md`](languages.md), never copy it.
 - `invocation_principal.json` decodes the trusted principal identity + typed claims and exposes them
   only for the action invocation; the principal-less fixtures remain accepted and expose no stale
   `RC_PRINCIPAL_*` values.
+- `invocation_action_run.json` exposes `action_run_id` as trusted `RC_ACTION_RUN_ID` (or typed
+  argument) only during that invocation; fixtures without it expose none, an inherited
+  `RC_ACTION_RUN_ID` never leaks into a script, and a malformed value refuses as 400.
 - `invocation_attachments.json`: verify signatures and decode parameter-keyed metadata; supporting
   ports materialize the tiny file byte-for-byte and preserve the unavailable descriptor. Unsupported
   ports refuse the nonempty map as signed 400 before execution (even on dry run).
@@ -73,7 +76,7 @@ implementation's status in [`languages.md`](languages.md), never copy it.
   `project_id` is an unsigned opaque `401 bad_signature` and never dispatches or records a nonce.
 
 ## Analysis client
-- `trigger.json`, `trigger_with_principal.json`, `sent_message.json`, `answers.json`: structural
+- `trigger.json`, `trigger_with_principal.json`, `trigger_with_context_refs.json`, `sent_message.json`, `answers.json`: structural
   equality + top-level key order + signature over the transmitted bytes.
 - Attachment caps enforced before sending; non-2xx/transport surfaced to the caller.
 

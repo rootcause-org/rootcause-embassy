@@ -420,6 +420,13 @@ bundle.
 - **Self-fix:** Stop rotating or minting tokens and ask the operator to verify host secret storage.
 - **Escalate with:** The error line and `rc project chat doctor --bundle`; never send secret material.
 
+## CONTEXT_REF_REFUSED
+
+- **Meaning:** An analysis trigger's `context_refs` entry names an action run this project, tenant or principal may not read, or one whose approved action does not delegate its chat context.
+- **Who fixes:** you, or the operator when the action manifest should opt in.
+- **Self-fix:** Send only the `RC_ACTION_RUN_ID` the action stored, with the same `tenant` (and principal, if any) as the originating chat; or trigger without `context_refs`.
+- **Escalate with:** The error line, the action id and the trigger's tenant slug (never the run id in public channels).
+
 ## CREDENTIALS_CONFLICT
 
 - **Meaning:** A `credentials` key in the chat token equals one of the project's own env var names, so the session did not open.

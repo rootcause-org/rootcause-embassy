@@ -382,6 +382,24 @@ Go/Python materialization, larger files and asynchronous transfer are deferred. 
 unchanged. Missing authorized blobs and corrupt content are per-file errors, allowing primary work
 and other transfers to continue. See [inline attachment contract](planes/actions.md#inline-chat-attachments-optional-capability).
 
+## 22. Action-run id is the delegated chat-context locator
+
+A ticket created by a chat escalation action needs its later analysis to read that chat. The host
+already writes the `action_runs` row (project, tenant, principal, proposing run, approval pin) before
+dispatch, so its id travels on the signed invocation as `action_run_id` and returns on the analysis
+trigger as `context_refs`. That avoids a minted grant, a new table, and any wait on the action result:
+the customer's create callback can trigger analysis while the action is still executing.
+
+The id is a locator, not a capability. The host authorizes from its own rows: signer project, exact
+tenant, executed non-test/non-preview action, an approved manifest version that opts into delegating
+its chat, and identity agreement when the trigger asserts a principal. Refusals carry no detail.
+`session_id` stays the analysis plane's own continuity; reusing the chat session id would mix two
+histories. Rejected: overloading `metadata` (round-trips verbatim, not an authorization field) and
+parsing session ids out of ticket text (legacy unverified hints never gain authority).
+
+Only one reference per trigger and only `kind: "action_run"` for now; arbitrary session lookup and
+share-link import are deferred.
+
 ## Fixture reconciliation notes
 
 The pre-hub goldens existed in two divergent copies. Resolved as follows:

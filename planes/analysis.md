@@ -22,7 +22,8 @@ the prior turns. Correlation is `metadata` + `analysis_id`; continuation is `ses
 ## 1. Trigger — `POST /analyses/{project}` (signed)
 
 Goldens: [`trigger.json`](../fixtures/analysis/trigger.json),
-[`trigger_with_principal.json`](../fixtures/analysis/trigger_with_principal.json).
+[`trigger_with_principal.json`](../fixtures/analysis/trigger_with_principal.json),
+[`trigger_with_context_refs.json`](../fixtures/analysis/trigger_with_context_refs.json).
 
 ```json
 {
@@ -31,6 +32,7 @@ Goldens: [`trigger.json`](../fixtures/analysis/trigger.json),
   "attachments": [{"filename":"error.log","mime_type":"text/plain","content_base64":"…"}],
   "metadata": {"resource_type":"SupportTicket","resource_id":"42"},
   "session_id": "<uuid>",
+  "context_refs": [{"kind":"action_run","id":"<uuid>"}],
   "principal": {"kind":"…","external_id":"…","asserted_by":"…","assurance":"…",
                 "tenant_hint":"…","source_metadata":{}},
   "nonce": "<uuid>",
@@ -55,6 +57,27 @@ Goldens: [`trigger.json`](../fixtures/analysis/trigger.json),
   8 MiB request body. Image mimes (`image/png|jpeg|webp|gif`) additionally reach a vision pass;
   everything else stays metadata-only. Enforce the cap client-side and raise **before** sending.
 
+### Context references
+
+`context_refs` optionally hands the run the chat that led to an action execution, e.g. a ticket created
+by a chat escalation action asks for analysis with that conversation as evidence.
+
+- At most **one** entry, exactly `{"kind":"action_run","id":"<uuid>"}`. Unknown kind, extra key,
+  malformed id or a second entry is `400`.
+- `id` is the trusted [`action_run_id`](actions.md#action-run-provenance) the Embassy exposed to the
+  approved action script. Never a param, user text or legacy unverified hint.
+- **The id locates; it does not authorize.** The host resolves it from its own rows and requires: the
+  same project as the signature, the same tenant as this trigger (both flat, or the same tenant), an
+  executed (not proposed, test, preview or dry-run) action whose approved manifest version delegates
+  its chat context, and — if this trigger carries a `principal` — the same identity as the source
+  chat. No principal means a tenant-level analysis; it reads the source only because the action
+  delegated it, and gains no other access.
+- Ineligible or foreign reference: `400 CONTEXT_REF_REFUSED`, deliberately without detail. A valid
+  reference whose chat has since expired or been deleted is accepted; the run sees an explicit
+  "unavailable" marker instead.
+- The source is read as of the action's proposal: later messages are excluded and counted. The
+  reference is independent of `session_id` continuity and does not round-trip in the result.
+
 **`202`** — golden [`trigger_response.json`](../fixtures/analysis/trigger_response.json):
 
 ```json
@@ -63,7 +86,7 @@ Goldens: [`trigger.json`](../fixtures/analysis/trigger.json),
 
 Failure modes, all fail-closed: `404` unknown project · `403` reverse channel disabled / no result URL
 · `401` bad signature or stale `issued_at` · `400` malformed body, blank body, bad tenant slug,
-invalid principal, unknown field · `409` replayed nonce · `500` internal.
+invalid principal, unknown field, refused context reference (`CONTEXT_REF_REFUSED`) · `409` replayed nonce · `500` internal.
 
 A non-2xx / malformed response / transport failure is surfaced to the **caller** (never swallowed);
 the caller decides whether to retry.

@@ -86,6 +86,15 @@ JSON). Decode the field tolerantly and keep accepting its absence. Never accept 
 `principal_claim_*` in action params, nor inherited `RC_PRINCIPAL_*` process env. Trust the principal only after the invocation
 signature verifies.
 
+## Action-run id and chat context
+
+Executing invocations carry `action_run_id`; Embassy implementations expose it as `RC_ACTION_RUN_ID`
+for the duration of the action (absent on dry run, never inherited from process env). Store it with
+the record the action creates. To let a later analysis of that record read the chat that led to it,
+pass it back as `context_refs: [{kind: "action_run", id: <stored id>}]` on the analysis trigger; the
+action's approved manifest must opt in. Never pass a param, user text or older unverified hint. See
+[context references](../../planes/analysis.md#context-references).
+
 ## Chat files on actions
 
 Attachment-enabled actions receive selected chat UUIDs in ordinary params and authorized bytes in a
