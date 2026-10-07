@@ -87,7 +87,7 @@ over the **exact transmitted segments** — never a re-encode.
 ## Widget tag
 
 ```html
-<script src="{chat_base_url}/chat/widget/v1/loader.js?v=4"
+<script src="{chat_base_url}/chat/widget/v1/loader.js?v=5"
         data-rc-project="<project>"
         data-rc-token="<token>"
         data-rc-mode="page"
@@ -96,7 +96,7 @@ over the **exact transmitted segments** — never a re-encode.
         data-rc-color-scheme="light"></script>
 ```
 
-- Loader path `/chat/widget/v1/loader.js`; **loader contract revision `?v=4`**. The host
+- Loader path `/chat/widget/v1/loader.js`; **loader contract revision `?v=5`**. The host
   immutable-caches that asset, so the revision MUST be bumped whenever a generated attribute starts
   requiring new loader behavior — otherwise an already-open browser pairs a new tag with stale
   JavaScript.
@@ -142,30 +142,53 @@ constants.
   `RootCause('destroy')`. `boot`/`update`/`show`/`hide`/`on` are unchanged; in persistent mode
   `update` ignores a token (the hook is the only source).
 
-## Page context (`page_url`)
+## Page context (`page_url`, `page_context`)
 
-`POST /chat/v1/message` takes an optional top-level string `page_url`: the host page the user had open
-when sending this message. It is an **untrusted contextual hint**, never identity, tenant, principal,
-scope or authorization, and the host never fetches it.
+`POST /chat/v1/message` and `/chat/v1/queue` accept optional top-level strings `page_url`
+(the page open at submission) and `page_context` (project-owned Markdown describing the UI).
+Both are **untrusted hints**, never identity, tenant, principal, scope or authorization. The host
+never fetches the URL. Neither is a message part or system/HiddenContext instruction.
 
-- **Kept only** on an embed-surface session and only when its origin equals the session's bound
-  embedding origin (scheme + host + port, default ports normalized; `http` only on loopback).
-- **Normalized**: userinfo, query and fragment stripped; at most 2048 bytes.
-- **Dropped whole** when the path looks like a capability: a segment containing `token`, `secret`,
-  `passw`, `apikey`/`api_key`/`api-key`; a segment word `reset`, `invite(s)`, `invitation(s)`,
-  `confirm(ation)`, `magic`, `verify`/`verification`, `unlock`, `oauth(2)`, `callback(s)`, `saml`,
-  `sso`, `signature`, `otp`; or a long opaque token-like segment. Numeric ids, UUIDs and lowercase
-  slugs are kept.
-- **Invalid is silent**: ignored, never a 4xx.
-- **Turn-only**: rendered to the agent for that turn as untrusted, superseding earlier page hints;
-  absent means "no current page". Never persisted as a chat message, never in transcripts, share
-  links or the viewer. Queued follow-ups carry none.
+- Embed sessions only; URL origin must equal the session's bound embedding origin (default ports
+  normalized, HTTP only on loopback). Userinfo and fragment are stripped; maximum URL 2048 bytes.
+- Query parameters are retained, including repeated keys and application filters. Remove sensitive
+  keys case-insensitively after decoding: keys containing `token`, `secret`, `passw`, `apikey`,
+  `api_key`, `api-key`, `credential`, `csrf`, `xsrf`, `signature`; and exact names or bracketed key
+  components `pwd`, `auth`, `authorization`, `jwt`, `bearer`, `session`, `session_id`, `sessionid`,
+  `cookie`, `code`, `state`, `nonce`, `otp`, `sig`. Do not infer sensitivity from ordinary opaque
+  values: scopes, filters, record ids and search terms remain useful context. The callback must not
+  copy credentials or arbitrary form values into Markdown.
+- Drop the entire URL and Markdown on invalid URLs or capability-shaped paths: path segments
+  containing `token`, `secret`, `passw`, `apikey`/`api_key`/`api-key`; segment words `reset`,
+  `invite(s)`, `invitation(s)`, `confirm(ation)`, `magic`, `verify`/`verification`, `unlock`,
+  `oauth(2)`, `callback(s)`, `saml`, `sso`, `signature`, `otp`; or long opaque token-like segments.
+  Numeric ids, UUIDs and ordinary slugs survive. Invalid hints never fail a message.
+- Markdown is bounded to 8 KiB UTF-8, stripped of control characters except newline/tab; truncated
+  content is marked. Callback errors/timeouts keep the valid URL without Markdown.
+- The current turn's context supersedes earlier hints; missing context explicitly means no current
+  page. Capture once at submission and reuse through automatic retries, Try again, queued drain,
+  steer and queued-to-normal fallback. Never sample a newer page on behalf of an older message.
+- Queued snapshots are stored in separate private message metadata for durable replay/rebind, never
+  in visible parts. Keep them through drain/retry; transcript/share/viewer/title projections exclude
+  them. They are not authorization and use the normal chat retention lifecycle.
 
-The hosted loader owns it for drop-in embeds. At send time the panel asks over the private
-MessageChannel (`page-request {id}` panel → host, `page {id, url}` host → panel); the loader reads
-`location` itself and pre-filters with the same rules. A stale cached loader never answers; the panel
-gives up after 1s and sends no page. No attribute, `update` field or loader revision changed.
-API-only clients MAY send it; nothing requires it.
+Register the project-specific callback before the loader executes:
+
+```js
+RootCause('boot', {
+  getPageContext: function () { return '# Current selection\nResource: people\nSelected IDs: …'; }
+});
+```
+
+A callback returns a string or Promise of a string. Prefer synchronous DOM reads. It must describe
+state at invocation, not after an asynchronous delay. The loader captures the URL before invoking
+it, bounds the callback to 300 ms, and answers `page-request {id}` with `page {id,url,context}` over
+the private MessageChannel. The panel's transport timeout remains 1 s; missing `context` from an
+older loader means empty Markdown. No navigation listener, push cache or `update` field is needed.
+A persistent instance keeps its first valid callback; re-rendering cannot clear it. API-only clients
+may send the same optional fields directly. Use loader revision `?v=5` for this callback contract.
+Sanitization cases: [`fixtures/chat/page_url.json`](../fixtures/chat/page_url.json), replayed by the
+host's browser and Go tests; these are unsigned normalization cases, not HMAC envelopes.
 
 The panel opens a session on first send or upload, not on load, so a rendered token's `jti` burns
 only when the user engages. A cold open resumes the principal's newest conversation active within 2h,

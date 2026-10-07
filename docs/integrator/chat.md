@@ -130,7 +130,7 @@ token, err := chat.MintEmbedToken(chatSecret, chat.Claims{
   `window.RootCause('update', {token: '<fresh-token>'})` (`update` takes only `token`). The loader
   also exposes `RootCause('show')`, `RootCause('hide')` and
   `RootCause('on', 'open'|'close'|'unreadCountChange', cb)`; persistent mode adds `presentation` and
-  `destroy` ([Persistent mode](#persistent-mode-turbo)). There is no other public API.
+  `destroy` ([Persistent mode](#persistent-mode-turbo)). `boot` also accepts a per-message `getPageContext` callback (below).
 - Outside persistent mode, on a 401 the panel sends its private `auth-expired` bridge message to the loader. The loader
   performs one full host-page reload at most once per 60 seconds, causing the backend to mint again.
   Do not listen for an undocumented DOM event or retry with the expired token. A no-full-reload SPA
@@ -495,3 +495,25 @@ codes rather than `/chat/v1/*` JSON statuses.
 SDK setup, token-minting, and configuration codes such as `CHAT_SECRET_REUSED` and
 `ACTION_SECRET_REQUIRED` surface before an HTTP response exists; read them from the typed SDK error
 or `[ReplyPen]` log line and use the same catalogue.
+
+## Project-specific page context
+
+Use loader revision `?v=5`. Add `getPageContext` to your existing `RootCause('boot', ...)` call:
+
+```js
+RootCause('boot', {
+  getPageContext: function () { return describeCurrentPageAsMarkdown(); }
+});
+```
+
+Your function reads app-specific state: active tab, resource type, selected ids and open action.
+Keep ids grouped by resource/table, distinguish selected rows from “all matching rows”, and state
+when a list is truncated. Prefer a synchronous DOM snapshot. Do not copy form values or credentials.
+The widget invokes it once per submitted message, including queued follow-ups; retries keep that
+snapshot. Strings and Promises work, with a 300 ms callback budget and 8 KiB Markdown limit. Failure
+falls back to the page URL. No backend token change or per-navigation update is needed.
+
+The widget separately captures the current URL, including query parameters except sensitive keys;
+fragments and capability-shaped URLs are excluded. The host checks the same rules. Define what your
+Markdown fields mean in your project brain; the model treats them as UI hints, never permissions or
+proof that an action ran. See [the page-context contract](../../planes/chat.md#page-context-page_url-page_context).

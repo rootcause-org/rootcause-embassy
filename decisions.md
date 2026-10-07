@@ -417,7 +417,7 @@ framework-specific controller would be the integrator's authorization code in ou
 
 ## 24. `page_url` is an untrusted, loader-owned, turn-only hint
 
-"What am I looking at?" needs the page, and only the browser knows it. The [page context](planes/chat.md#page-context-page_url)
+"What am I looking at?" needs the page, and only the browser knows it. The [page context](planes/chat.md#page-context-page_url-page_context)
 rides the browser → host chat API as an optional `page_url` on the message turn, never a token claim:
 a claim would freeze one page for the token's lifetime and push per-navigation work onto the
 integrator's backend. The hosted loader reads `location` itself, so integrators assert nothing; a
@@ -435,6 +435,22 @@ No fan-out: no JWT claim, no signed edge, no widget-tag attribute and no loader 
 the SDK fixtures, the chat JWT vector and the signing vectors are untouched and the Ruby, Go and Python
 Embassies have nothing to conform to. The rootcause host and its hosted loader are the only
 implementations.
+
+## 25. Per-message project context and queued snapshots (`?v=5`)
+
+The host cannot understand every application's DOM. An integrator-owned `getPageContext` boot
+callback returns bounded Markdown; the hosted loader samples it together with the URL at submission.
+The callback remains app code, not server-configured executable JavaScript. Queued messages need the
+same immutable snapshot as normal messages, including retries and steer/rebind; private metadata
+therefore survives drain and is excluded from public transcript projections.
+
+Queries carry meaningful list scopes/filters. Keep them except decoded credential-related keys,
+rather than deleting every query or guessing that an opaque application value must be a secret.
+Browser and server replay one normalization fixture. Context is untrusted and never changes access.
+
+Loader revision 5 forces fresh callback-aware code. SDKs only bump their loader revision and vendor
+the fixtures; no JWT claim or signed edge changes. The normalization fixture is unsigned test data,
+so existing signing vectors remain byte-identical.
 
 ## Fixture reconciliation notes
 
