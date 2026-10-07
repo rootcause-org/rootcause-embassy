@@ -447,6 +447,9 @@ therefore survives drain and is excluded from public transcript projections.
 Queries carry meaningful list scopes/filters. Keep them except decoded credential-related keys,
 rather than deleting every query or guessing that an opaque application value must be a secret.
 Browser and server replay one normalization fixture. Context is untrusted and never changes access.
+The blacklist checks decoded parameter names, not JSON/base64 inside values: `q`, `filters` and
+`encrypted_query` remain within the 2048-byte URL cap and may include search text or personal data.
+Whole-word `code` and `state` are excluded even when an application uses them as harmless filters.
 
 Loader revision 5 forces fresh callback-aware code. SDKs only bump their loader revision and vendor
 the fixtures; no JWT claim or signed edge changes. The normalization fixture is unsigned test data,
